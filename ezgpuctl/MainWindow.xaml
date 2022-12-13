@@ -15,6 +15,9 @@
             <RowDefinition Height="277*"/>
             <RowDefinition Height="157*"/>
         </Grid.RowDefinitions>
+        <Grid Grid.Row="0">
+            <controls:OcEditorView DataContext="{Binding SelectedGpuOc}" />
+        </Grid>
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>

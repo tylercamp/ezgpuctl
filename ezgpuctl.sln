@@ -5,6 +5,8 @@ VisualStudioVersion = 17.0.32014.148
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GPUControl.App", "ezgpuctl\GPUControl.App.csproj", "{A7864998-E73F-4043-B54E-8AB675B3EBE6}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NvAPIWrapper", "NvAPIWrapper\NvAPIWrapper.csproj", "{1DFC1CF4-C8AF-4A7E-AA19-E76BCAEB1683}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,18 @@ Global
 		{A7864998-E73F-4043-B54E-8AB675B3EBE6}.Release|x64.Build.0 = Release|Any CPU
 		{A7864998-E73F-4043-B54E-8AB675B3EBE6}.Release|x86.ActiveCfg = Release|Any CPU
 		{A7864998-E73F-4043-B54E-8AB675B3EBE6}.Release|x86.Build.0 = Release|Any CPU
+		{1DFC1CF4-C8AF-4A7E-AA19-E76BCAEB1683}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1DFC1CF4-C8AF-4A7E-AA19-E76BCAEB1683}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1DFC1CF4-C8AF-4A7E-AA19-E76BCAEB1683}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{1DFC1CF4-C8AF-4A7E-AA19-E76BCAEB1683}.Debug|x64.Build.0 = Debug|Any CPU
+		{1DFC1CF4-C8AF-4A7E-AA19-E76BCAEB1683}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{1DFC1CF4-C8AF-4A7E-AA19-E76BCAEB1683}.Debug|x86.Build.0 = Debug|Any CPU
+		{1DFC1CF4-C8AF-4A7E-AA19-E76BCAEB1683}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1DFC1CF4-C8AF-4A7E-AA19-E76BCAEB1683}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1DFC1CF4-C8AF-4A7E-AA19-E76BCAEB1683}.Release|x64.ActiveCfg = Release|Any CPU
+		{1DFC1CF4-C8AF-4A7E-AA19-E76BCAEB1683}.Release|x64.Build.0 = Release|Any CPU
+		{1DFC1CF4-C8AF-4A7E-AA19-E76BCAEB1683}.Release|x86.ActiveCfg = Release|Any CPU
+		{1DFC1CF4-C8AF-4A7E-AA19-E76BCAEB1683}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

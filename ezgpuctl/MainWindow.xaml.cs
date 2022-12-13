@@ -1,6 +1,7 @@
 ﻿using GPUControl.Controls;
 using NvAPIWrapper;
 using NvAPIWrapper.GPU;
+using NvAPIWrapper.Native;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -21,9 +22,9 @@ using System.Windows.Threading;
 
 namespace GPUControl
 {
-    public class RealTimeGpuViewModel : INotifyPropertyChanged
+    public class RealTimeGpuViewModel : ViewModel
     {
-        PhysicalGPU? _gpu;
+        public PhysicalGPU? _gpu;
         string _gpuName;
         public RealTimeGpuViewModel(PhysicalGPU? gpu)
         {
@@ -61,35 +62,22 @@ namespace GPUControl
         {
             if (_gpu != null)
             {
-                var currentClocks = _gpu.CurrentClockFrequencies;
-                var baseClocks = _gpu.BaseClockFrequencies;
-                var perfInfo = _gpu.PerformanceControl;
-                var powerInfo = _gpu.PowerTopologyInformation.PowerTopologyEntries.Where(e => e.Domain == NvAPIWrapper.Native.GPU.PowerTopologyDomain.GPU).First(); ;
-                var powerTargetInfo = perfInfo.PowerLimitPolicies.First();
-                var tempInfo = _gpu.ThermalInformation.ThermalSensors.Where(s => s.Controller == NvAPIWrapper.Native.GPU.ThermalController.GPU).First();
-                var tempTarget = perfInfo.ThermalLimitPolicies.Where(p => p.Controller == NvAPIWrapper.Native.GPU.ThermalController.GPU).First();
+                var gpuWrapper = new GpuWrapper(_gpu);
 
                 GpuStatus = new GpuStatusViewModel
                 {
                     GpuName = _gpuName,
-                    CoreClock = currentClocks.GraphicsClock.Frequency / 1000,
-                    CoreBaseClock = baseClocks.GraphicsClock.Frequency / 1000,
-                    MemoryClock = currentClocks.MemoryClock.Frequency / 1000,
-                    MemoryBaseClock = baseClocks.MemoryClock.Frequency / 1000,
+                    CoreClock = gpuWrapper.Clocks.CurrentCoreClockMhz,
+                    CoreBaseClock = gpuWrapper.Clocks.BaseCoreClockMhz,
+                    MemoryClock = gpuWrapper.Clocks.CurrentMemoryClockMhz,
+                    MemoryBaseClock = gpuWrapper.Clocks.BaseMemoryClockMhz,
 
-                    CurrentPower = (decimal)powerInfo.PowerUsageInPercent,
-                    PowerTarget = (decimal)powerTargetInfo.PowerTargetInPercent,
-                    CurrentTemp = (decimal)tempInfo.CurrentTemperature,
-                    TempTarget = tempTarget.TargetTemperature,
+                    CurrentPower = gpuWrapper.Power.CurrentPower,
+                    PowerTarget = gpuWrapper.Power.CurrentTargetPower,
+                    CurrentTemp = gpuWrapper.Temps.CurrentCoreTemp,
+                    TempTarget = gpuWrapper.Temps.TempTarget,
                 };
             }
-        }
-
-
-        public event PropertyChangedEventHandler? PropertyChanged;
-        protected void OnPropertyChanged([CallerMemberName] string name = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
     }
 
@@ -99,12 +87,14 @@ namespace GPUControl
         {
             GPUs = new List<RealTimeGpuViewModel> { new RealTimeGpuViewModel(null) };
             _selectedGpu = GPUs[0];
+            //_selectedGpuOc = new OcEditorViewModel(_selectedGpu._gpu);
         }
 
         public MainWindowViewModel(List<PhysicalGPU> gpus)
         {
             GPUs = gpus.Select(gpu => new RealTimeGpuViewModel(gpu)).ToList();
             _selectedGpu = GPUs[0];
+            _selectedGpuOc = new OcEditorViewModel(_selectedGpu._gpu);
         }
 
         public List<RealTimeGpuViewModel> GPUs { get; set; }
@@ -118,6 +108,21 @@ namespace GPUControl
                 if (_selectedGpu != value)
                 {
                     _selectedGpu = value;
+                    OnPropertyChanged();
+                    SelectedGpuOc = new OcEditorViewModel(_selectedGpu._gpu);
+                }
+            }
+        }
+
+        private OcEditorViewModel _selectedGpuOc;
+        public OcEditorViewModel SelectedGpuOc
+        {
+            get => _selectedGpuOc;
+            set
+            {
+                if (_selectedGpuOc != value)
+                {
+                    _selectedGpuOc = value;
                     OnPropertyChanged();
                 }
             }

@@ -33,7 +33,7 @@ namespace GPUControl.Controls
         public string MemoryClockString => $"{MemoryClock} MHz";
         public string MemoryBaseClockString => $"{MemoryBaseClock} MHz";
         public string PowerTargetString => $"{CurrentPower}% / {PowerTarget}%";
-        public string TempTargetString => $"{CurrentTemp}% / {TempTarget}C";
+        public string TempTargetString => $"{CurrentTemp}C / {TempTarget}C";
     }
 
     /// <summary>
