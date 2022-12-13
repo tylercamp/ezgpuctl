@@ -2,7 +2,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>net60</TargetFrameworks>
-    <Version>0.8.1.101</Version>
+    <Version>0.8.1.105</Version>
     <Company>falahati.net</Company>
     <Description>NvAPIWrapper is a .Net wrapper for NVIDIA public API</Description>
     <Authors>Soroush Falahati</Authors>
@@ -17,7 +17,6 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <Title>NvAPIWrapper (for NVAPI 410)</Title>
     <PackageId>NvAPIWrapper.Net</PackageId>
-    <AssemblyOriginatorKeyFile>OpenSourceStrongNameSignKey.pfx</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <OutputPath>..\Debug</OutputPath>
