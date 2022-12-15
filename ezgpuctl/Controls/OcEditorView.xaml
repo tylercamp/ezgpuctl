@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:GPUControl.Controls"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800" Background="White">
+             d:DesignHeight="450" d:DesignWidth="800" d:Background="White">
     <UserControl.DataContext>
         <local:OcEditorViewModel />
     </UserControl.DataContext>
@@ -19,7 +19,6 @@
                 <RowDefinition Height="51"/>
                 <RowDefinition Height="59"/>
                 <RowDefinition Height="57"/>
-                <RowDefinition Height="44"/>
                 <RowDefinition/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
@@ -31,20 +30,18 @@
             <!-- Power target -->
             <TextBlock Grid.Row="0" HorizontalAlignment="Center" Margin="0,7,0,0" TextWrapping="Wrap" Text="Power" VerticalAlignment="Top" Width="80" Height="16"/>
             <TextBlock Grid.Row="0" HorizontalAlignment="Center" Margin="0,28,0,0" TextWrapping="Wrap" Text="{Binding PowerTarget}" VerticalAlignment="Top" Height="16" Width="80"/>
-            <Slider Grid.Column="1" Margin="10,0,10,0" VerticalAlignment="Center" Height="18" Value="{Binding PowerTarget, Mode=TwoWay}" Minimum="{Binding PowerTargetRange.Min}" Maximum="{Binding PowerTargetRange.Max}" IsSnapToTickEnabled="True"/>
+            <Slider Grid.Column="1" Margin="10,0,10,0" VerticalAlignment="Center" Height="18" IsEnabled="{Binding CanWrite}" Value="{Binding PowerTarget, Mode=TwoWay}" Minimum="{Binding PowerTargetRange.Min}" Maximum="{Binding PowerTargetRange.Max}" IsSnapToTickEnabled="True"/>
 
 
             <!-- Core clock -->
             <TextBlock Grid.Row="1" HorizontalAlignment="Center" Margin="0,7,0,0"  TextWrapping="Wrap" Text="Core Offset" VerticalAlignment="Top" Width="80" Height="16"/>
             <TextBlock Grid.Row="1" HorizontalAlignment="Center" Margin="0,28,0,0" TextWrapping="Wrap" Text="{Binding GpuClock}" VerticalAlignment="Top" Height="16" Width="80"/>
-            <Slider Grid.Column="1" Grid.Row="1" Margin="10,0,10,0" VerticalAlignment="Center" Height="18" Value="{Binding GpuClock, Mode=TwoWay}" Minimum="{Binding GpuClockRange.Min}" Maximum="{Binding GpuClockRange.Max}" IsSnapToTickEnabled="True"/>
+            <Slider Grid.Column="1" Grid.Row="1" Margin="10,0,10,0" VerticalAlignment="Center" IsEnabled="{Binding CanWrite}" Height="18" Value="{Binding GpuClock, Mode=TwoWay}" Minimum="{Binding GpuClockRange.Min}" Maximum="{Binding GpuClockRange.Max}" IsSnapToTickEnabled="True"/>
 
             <!-- Memory clock -->
             <TextBlock Grid.Row="2" HorizontalAlignment="Center" Margin="0,7,0,0"  TextWrapping="Wrap" Text="Memory Offset" VerticalAlignment="Top" Width="80" Height="16"/>
             <TextBlock Grid.Row="2" HorizontalAlignment="Center" Margin="0,28,0,0" TextWrapping="Wrap" Text="{Binding MemoryClock}" VerticalAlignment="Top" Height="16" Width="80"/>
-            <Slider Grid.Column="1" Grid.Row="2" Margin="10,0,10,0" VerticalAlignment="Center" Height="18" Value="{Binding MemoryClock, Mode=TwoWay}" Minimum="{Binding MemoryClockRange.Min}" Maximum="{Binding MemoryClockRange.Max}" IsSnapToTickEnabled="True"/>
-
+            <Slider Grid.Column="1" Grid.Row="2" Margin="10,0,10,0" VerticalAlignment="Center" IsEnabled="{Binding CanWrite}" Height="18" Value="{Binding MemoryClock, Mode=TwoWay}" Minimum="{Binding MemoryClockRange.Min}" Maximum="{Binding MemoryClockRange.Max}" IsSnapToTickEnabled="True"/>
         </Grid>
-        <Button Content="Apply" HorizontalAlignment="Left" Margin="10,10,10,10" Grid.Row="1" Height="20" VerticalAlignment="Bottom" Click="Button_Click"/>
     </Grid>
 </UserControl>

@@ -23,3 +23,42 @@ TODOs:
 - Ability to set an OC profile depending on running processes
 - Ability to compose OC profiles depending on use of multiple processes
 - Fan control
+
+## Limitations
+
+These features are not offered:
+
+- VF curves - These are currently unsupported by NvAPIWrapper
+- Voltage offsets (%) - These seem to be placebo
+- Fan curves - My GPUs are water cooled and I cannot test fan settings
+
+Testing has only been done on 3000-series cards.
+
+---
+
+Overclocking options are split into:
+
+- Overclocks - Direct, per-GPU OC options
+- Overclock Profiles - A list of Overclocks (1 per GPU)
+- Overclock Policies - A list of program rules (program is/is not running) + an ordered list of Profiles
+
+Overclocks can contain certain options but leave others disabled. This is so that OC settings can be merged if multiple settings are in
+use, since multiple OC Profiles may be active simultaneously. When OCs are merged (priority based on their order in the profile/policy list),
+OC settings which are defined will overwrite previous values for that setting. If a setting is undefined, that OC won't affect that
+particular setting at all. For example:
+
+- Profile "Compute" - Overclocks specifying 80% power target for all GPUs, other settings disabled
+- Profile "Gaming" - Overclocks specifying 105% power target for GPU 1
+- Profile "Safe Memory OC" - +600MHz Memory OC on GPU 1
+- Profile "High Memory OC" - +1000 OC on GPU 1
+- Profile "Stock" (built-in) - All settings enabled and set to stock values for all GPUs
+
+- Policy "Folding@Home" runs when FAH exe is running, applies "Compute" profile
+- Policy "Starcraft" runs when Starcraft exe is running, applies "Gaming", "Safe Memory OC" profiles
+- Policy "CoD" runs when CoD exe is running, applies "Gaming", "High Memory OC" profiles
+- Policy "Default" (built-in) is always active, applies "Stock" profile
+
+With the given Policies and Profiles (in the given order)
+
+_When playing Starcraft_ - "Gaming" (GPU 1: 105% Power) and "Safe Memory OC" (GPU 1: Memory +600MHz) are combined for an effective `GPU 1: 105% Power, Memory +600Mhz` OC.
+_When playing Starcraft with FAH_ - Starcraft Policy (`GPU 1: 105% Power, Memory +600MHz`) is partially overwritten by Folding@Home Policy (`GPU 1: 80% Power`, `GPU 2: 80% Power`) giving an effective `GPU 1: 80% Power, Memory +600MHz`, `GPU 2: 80% Power`

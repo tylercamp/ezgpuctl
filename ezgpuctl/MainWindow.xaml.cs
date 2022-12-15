@@ -142,16 +142,25 @@ namespace GPUControl
     {
         private List<PhysicalGPU> _gpus;
         private MainWindowViewModel _viewModel;
+        private Settings _settings;
 
         public MainWindow()
         {
             NVIDIA.Initialize();
+            _settings = Settings.LoadFrom("settings.json");
+
             this._gpus = PhysicalGPU.GetPhysicalGPUs().ToList();
             this._viewModel = new MainWindowViewModel(_gpus);
             this.DataContext = this._viewModel;
 
             InitializeComponent();
 
+            KeyDown += (s, e) =>
+            {
+                if (e.Key == Key.S && Keyboard.Modifiers == ModifierKeys.Control) _settings.Save();
+            };
+            
+            // refresh GPU status view
             new DispatcherTimer(
                 interval: TimeSpan.FromSeconds(1),
                 priority: DispatcherPriority.Normal,

@@ -34,6 +34,8 @@ namespace GPUControl.Controls
             GpuClock = GpuClockRange.Middle;
             MemoryClock = MemoryClockRange.Middle;
             TempTarget = TempTargetRange.Middle;
+
+            _canWrite = true;
         }
 
         public PhysicalGPU _gpu;
@@ -56,6 +58,8 @@ namespace GPUControl.Controls
 
             this.TempTargetRange = wrapper.Temps.TempTargetRange;
             this.TempTarget = wrapper.Temps.TempTarget;
+
+            _canWrite = true;
         }
 
         public ValueRange PowerTargetRange { get; }
@@ -118,6 +122,17 @@ namespace GPUControl.Controls
                 OnPropertyChanged();
             }
         }
+
+        private bool _canWrite;
+        public bool CanWrite
+        {
+            get => _canWrite;
+            set
+            {
+                _canWrite = value;
+                OnPropertyChanged();
+            }
+        }
     }
 
     /// <summary>
@@ -134,40 +149,7 @@ namespace GPUControl.Controls
         {
             var vm = DataContext as OcEditorViewModel;
 
-            #region Power target
-            var updatedPolicyEntries = GPUApi.ClientPowerPoliciesGetStatus(vm._gpu.Handle).PowerPolicyStatusEntries.Select(e =>
-            {
-                if (e.PerformanceStateId != NvAPIWrapper.Native.GPU.PerformanceStateId.P0_3DPerformance)
-                {
-                    return e;
-                }
-                else
-                {
-                    var result = new PrivatePowerPoliciesStatusV1.PowerPolicyStatusEntry(NvAPIWrapper.Native.GPU.PerformanceStateId.P0_3DPerformance, (uint)(vm.PowerTarget * 1000));
-                    return result;
-                }
-            }).ToArray();
-
-            var newPolicy = new PrivatePowerPoliciesStatusV1(updatedPolicyEntries);
-            GPUApi.ClientPowerPoliciesSetStatus(vm._gpu.Handle, newPolicy);
-            #endregion
-
-            #region Clock Offsets
-            var baseStates = GPUApi.GetPerformanceStates20(vm._gpu.Handle);
-            var newGpuPerfState = new PerformanceStates20InfoV1.PerformanceState20(
-                NvAPIWrapper.Native.GPU.PerformanceStateId.P0_3DPerformance,
-                new PerformanceStates20ClockEntryV1[]
-                {
-                    new PerformanceStates20ClockEntryV1(NvAPIWrapper.Native.GPU.PublicClockDomain.Graphics, new PerformanceStates20ParameterDelta((int)vm.GpuClock * 1000)),
-                    new PerformanceStates20ClockEntryV1(NvAPIWrapper.Native.GPU.PublicClockDomain.Memory, new PerformanceStates20ParameterDelta((int)vm.MemoryClock * 1000))
-                },
-                new PerformanceStates20BaseVoltageEntryV1[] {}
-            );
-
-            var newInfo = new PerformanceStates20InfoV3(new PerformanceStates20InfoV1.PerformanceState20[] { newGpuPerfState }, 2, 0);
-
-            GPUApi.SetPerformanceStates20(vm._gpu.Handle, newInfo);
-            #endregion
+            
         }
     }
 }
