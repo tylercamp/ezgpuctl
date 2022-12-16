@@ -1,4 +1,6 @@
-﻿using System;
+﻿using GPUControl.ViewModels;
+using NvAPIWrapper.GPU;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,13 +18,15 @@ using System.Windows.Shapes;
 namespace GPUControl.Controls
 {
     /// <summary>
-    /// Interaction logic for GpuStatusView.xaml
+    /// Interaction logic for OcProfileEditorView.xaml
     /// </summary>
-    public partial class GpuStatusView : UserControl
+    public partial class OcProfileEditorWindow: Window
     {
-        public GpuStatusView()
+        public OcProfileEditorWindow()
         {
             InitializeComponent();
         }
+
+        public event Func<string, bool>? NewNameSelected;
     }
 }

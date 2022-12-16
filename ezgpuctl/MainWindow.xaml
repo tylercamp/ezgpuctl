@@ -6,31 +6,62 @@
         xmlns:controls="clr-namespace:GPUControl.Controls"
         xmlns:local="clr-namespace:GPUControl"
         mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=local:MainWindowViewModel, IsDesignTimeCreatable=True}"
         Title="EZ GPU Control" Height="450" Width="800">
-    <d:Window.DataContext>
-        <local:MainWindowViewModel />
-    </d:Window.DataContext>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="277*"/>
             <RowDefinition Height="157*"/>
         </Grid.RowDefinitions>
         <Grid Grid.Row="0">
-            <controls:OcEditorView DataContext="{Binding SelectedGpuOc}" />
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+            </Grid.ColumnDefinitions>
+            <Grid Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="34*"/>
+                    <RowDefinition Height="243*"/>
+                </Grid.RowDefinitions>
+                <Label Grid.Row="0" Content="Policies" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                <Button Grid.Row="0" Content="Add" Margin="0,10,10,0" VerticalAlignment="Top" HorizontalAlignment="Right" Width="40"/>
+                <ListBox Grid.Row="1" ItemsSource="{Binding Policies}" SelectedItem="{Binding SelectedPolicy, Mode=TwoWay}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Label Content="{Binding Label}" />
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Grid>
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="38*"/>
+                    <RowDefinition Height="239*"/>
+                </Grid.RowDefinitions>
+                <Label Grid.Row="0" Content="Profiles" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Center" Height="26" Width="49"/>
+                <Button Grid.Row="0" Content="Add" HorizontalAlignment="Left" Margin="350,9,0,0" VerticalAlignment="Top" Height="17" Width="40" Click="AddProfileButton_Click"/>
+                <ListView Grid.Row="1" ItemsSource="{Binding Profiles}" SelectedItem="{Binding SelectedProfile, Mode=TwoWay}">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <Label Content="{Binding Label}" />
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Grid>
         </Grid>
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <ListBox Grid.Column="0" ItemsSource="{Binding GPUs}" SelectedValue="{Binding SelectedGpu, Mode=TwoWay}">
+            <ListBox Grid.Column="0" ItemsSource="{Binding GpuStatuses}" SelectedValue="{Binding SelectedGpu, Mode=TwoWay}">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <TextBlock Text="{Binding GpuStatus.GpuName}" />
+                        <TextBlock Text="{Binding GpuName}" />
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
-            <controls:GpuStatusView Grid.Column="1" DataContext="{Binding SelectedGpu.GpuStatus}" />
+            <controls:GpuStatusView Grid.Column="1" DataContext="{Binding SelectedGpu}" />
         </Grid>
     </Grid>
 </Window>

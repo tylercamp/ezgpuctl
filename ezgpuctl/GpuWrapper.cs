@@ -32,6 +32,8 @@ namespace GPUControl
         public gpuwrapper.PowerInfo Power { get; }
         public gpuwrapper.TempInfo Temps { get; }
 
+        public string Label => $"{gpu.FullName} #{GpuId}";
+
         public void ApplyOC(Model.GpuOverclock oc)
         {
             #region Power target

@@ -36,6 +36,10 @@ Testing has only been done on 3000-series cards.
 
 ---
 
+
+
+---
+
 Overclocking options are split into:
 
 - Overclocks - Direct, per-GPU OC options

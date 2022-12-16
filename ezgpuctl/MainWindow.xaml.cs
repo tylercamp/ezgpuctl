@@ -1,9 +1,12 @@
 ﻿using GPUControl.Controls;
+using GPUControl.Model;
+using GPUControl.ViewModels;
 using NvAPIWrapper;
 using NvAPIWrapper.GPU;
 using NvAPIWrapper.Native;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -22,85 +25,52 @@ using System.Windows.Threading;
 
 namespace GPUControl
 {
-    public class RealTimeGpuViewModel : ViewModel
-    {
-        public PhysicalGPU? _gpu;
-        string _gpuName;
-        public RealTimeGpuViewModel(PhysicalGPU? gpu)
-        {
-            this._gpu = gpu;
-            _gpuStatus = new GpuStatusViewModel();
-
-            if (_gpu != null)
-            {
-                var numDisplays = _gpu.ActiveOutputs.Length;
-                _gpuName = $"{_gpu.FullName} ({numDisplays} displays)";
-                Update();
-            }
-            else
-            {
-                _gpuName = "GPU Name";
-                _gpuStatus.GpuName = _gpuName;
-            }
-        }
-
-        private GpuStatusViewModel _gpuStatus;
-        public GpuStatusViewModel GpuStatus
-        {
-            get => _gpuStatus;
-            set
-            {
-                if (_gpuStatus != value)
-                {
-                    _gpuStatus = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-        public void Update()
-        {
-            if (_gpu != null)
-            {
-                var gpuWrapper = new GpuWrapper(_gpu);
-
-                GpuStatus = new GpuStatusViewModel
-                {
-                    GpuName = _gpuName,
-                    CoreClock = gpuWrapper.Clocks.CurrentCoreClockMhz,
-                    CoreBaseClock = gpuWrapper.Clocks.BaseCoreClockMhz,
-                    MemoryClock = gpuWrapper.Clocks.CurrentMemoryClockMhz,
-                    MemoryBaseClock = gpuWrapper.Clocks.BaseMemoryClockMhz,
-
-                    CurrentPower = gpuWrapper.Power.CurrentPower,
-                    PowerTarget = gpuWrapper.Power.CurrentTargetPower,
-                    CurrentTemp = gpuWrapper.Temps.CurrentCoreTemp,
-                    TempTarget = gpuWrapper.Temps.TempTarget,
-                };
-            }
-        }
-    }
-
-    public class MainWindowViewModel : INotifyPropertyChanged
+    public class MainWindowViewModel : ViewModel
     {
         public MainWindowViewModel()
         {
-            GPUs = new List<RealTimeGpuViewModel> { new RealTimeGpuViewModel(null) };
-            _selectedGpu = GPUs[0];
-            //_selectedGpuOc = new OcEditorViewModel(_selectedGpu._gpu);
+            GpuStatuses = new List<GpuStatusViewModel> { new GpuStatusViewModel(null) };
+            _selectedGpu = GpuStatuses[0];
         }
 
-        public MainWindowViewModel(List<PhysicalGPU> gpus)
+        public MainWindowViewModel(List<PhysicalGPU> gpus, Settings settings)
         {
-            GPUs = gpus.Select(gpu => new RealTimeGpuViewModel(gpu)).ToList();
-            _selectedGpu = GPUs[0];
-            _selectedGpuOc = new OcEditorViewModel(_selectedGpu._gpu);
+            Settings = new SettingsViewModel(gpus, settings);
+            GpuStatuses = gpus.Select(gpu => new GpuStatusViewModel(gpu)).ToList();
+            _selectedGpu = GpuStatuses[0];
         }
 
-        public List<RealTimeGpuViewModel> GPUs { get; set; }
+        public SettingsViewModel Settings { get; private set; }
 
-        private RealTimeGpuViewModel _selectedGpu;
-        public RealTimeGpuViewModel SelectedGpu
+        public List<GpuStatusViewModel> GpuStatuses { get; }
+
+        public ObservableCollection<GpuOverclockProfileViewModel> Profiles => Settings.Profiles;
+        public ObservableCollection<GpuOverclockPolicyViewModel> Policies => Settings.Policies;
+
+        private GpuOverclockProfileViewModel _selectedProfile;
+        public GpuOverclockProfileViewModel SelectedProfile
+        {
+            get => _selectedProfile;
+            set
+            {
+                _selectedProfile = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private GpuOverclockPolicyViewModel _selectedPolicy;
+        public GpuOverclockPolicyViewModel SelectedPolicy
+        {
+            get => _selectedPolicy;
+            set
+            {
+                _selectedPolicy = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private GpuStatusViewModel _selectedGpu;
+        public GpuStatusViewModel SelectedGpu
         {
             get => _selectedGpu;
             set
@@ -109,29 +79,8 @@ namespace GPUControl
                 {
                     _selectedGpu = value;
                     OnPropertyChanged();
-                    SelectedGpuOc = new OcEditorViewModel(_selectedGpu._gpu);
                 }
             }
-        }
-
-        private OcEditorViewModel _selectedGpuOc;
-        public OcEditorViewModel SelectedGpuOc
-        {
-            get => _selectedGpuOc;
-            set
-            {
-                if (_selectedGpuOc != value)
-                {
-                    _selectedGpuOc = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-        public event PropertyChangedEventHandler? PropertyChanged;
-        protected void OnPropertyChanged([CallerMemberName] string name = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
     }
 
@@ -150,7 +99,7 @@ namespace GPUControl
             _settings = Settings.LoadFrom("settings.json");
 
             this._gpus = PhysicalGPU.GetPhysicalGPUs().ToList();
-            this._viewModel = new MainWindowViewModel(_gpus);
+            this._viewModel = new MainWindowViewModel(_gpus, _settings);
             this.DataContext = this._viewModel;
 
             InitializeComponent();
@@ -166,7 +115,7 @@ namespace GPUControl
                 priority: DispatcherPriority.Normal,
                 callback: (sender, e) =>
                 {
-                    _viewModel.SelectedGpu.Update();
+                    _viewModel.SelectedGpu.UpdateState();
                 },
                 dispatcher: this.Dispatcher
             ).Start();
@@ -177,6 +126,23 @@ namespace GPUControl
             base.OnClosed(e);
 
             NVIDIA.Unload();
+        }
+
+        private void AddProfileButton_Click(object sender, RoutedEventArgs e)
+        {
+            var newProfile = new GpuOverclockProfile("New Profile");
+            var newProfileVm = new GpuOverclockProfileViewModel(_gpus, newProfile);
+            var editorWindow = new OcProfileEditorWindow();
+            editorWindow.DataContext = newProfileVm;
+            
+            editorWindow.NewNameSelected += name => _settings.Profiles.Any(p => p.Label == name);
+
+            if (editorWindow.ShowDialog() == true)
+            {
+                newProfileVm.ApplyPendingLabel();
+                newProfileVm.ApplyChanges();
+                _viewModel.Settings.AddProfile(newProfile, newProfileVm);
+            }
         }
     }
 }

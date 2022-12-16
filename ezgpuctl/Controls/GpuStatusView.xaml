@@ -4,10 +4,11 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:GPUControl.Controls"
+             xmlns:vm="clr-namespace:GPUControl.ViewModels"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="600" d:Background="White">
     <UserControl.DataContext>
-        <local:GpuStatusViewModel />
+        <vm:GpuStatusViewModel />
     </UserControl.DataContext>
     <Grid>
         <Grid.RowDefinitions>
@@ -35,12 +36,12 @@
                     <TextBlock FontWeight="Bold">Memory</TextBlock>
                 </StackPanel>
                 <StackPanel Grid.Column="1" Grid.Row="1">
-                    <TextBlock Text="{Binding CoreClockString}" />
-                    <TextBlock Text="{Binding MemoryClockString}" />
+                    <TextBlock Text="{Binding State.MemoryBaseClockString}" />
+                    <TextBlock Text="{Binding State.MemoryClockString}" />
                 </StackPanel>
                 <StackPanel Grid.Column="2" Grid.Row="1">
-                    <TextBlock Text="{Binding CoreBaseClockString}" />
-                    <TextBlock Text="{Binding MemoryBaseClockString}" />
+                    <TextBlock Text="{Binding State.CoreBaseClockString}" />
+                    <TextBlock Text="{Binding State.MemoryBaseClockString}" />
                 </StackPanel>
             </Grid>
         </GroupBox>
@@ -56,8 +57,8 @@
                     <TextBlock FontWeight="Bold">Temperature</TextBlock>
                 </StackPanel>
                 <StackPanel Grid.Column="1" Margin="5,0,0,0">
-                    <TextBlock Text="{Binding PowerTargetString}" />
-                    <TextBlock Text="{Binding TempTargetString}" />
+                    <TextBlock Text="{Binding State.PowerTargetString}" />
+                    <TextBlock Text="{Binding State.TempTargetString}" />
                 </StackPanel>
             </Grid>
         </GroupBox>

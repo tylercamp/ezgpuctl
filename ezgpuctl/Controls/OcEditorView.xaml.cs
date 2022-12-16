@@ -35,6 +35,8 @@ namespace GPUControl.Controls
             MemoryClock = MemoryClockRange.Middle;
             TempTarget = TempTargetRange.Middle;
 
+            GpuLabel = "GPU Label";
+
             _canWrite = true;
         }
 
@@ -59,6 +61,8 @@ namespace GPUControl.Controls
             this.TempTargetRange = wrapper.Temps.TempTargetRange;
             this.TempTarget = wrapper.Temps.TempTarget;
 
+            GpuLabel = wrapper.Label;
+
             _canWrite = true;
         }
 
@@ -67,6 +71,8 @@ namespace GPUControl.Controls
         public ValueRange GpuClockRange { get; }
         public ValueRange MemoryClockRange { get; }
         public ValueRange TempTargetRange { get; }
+
+        public string GpuLabel { get; }
 
         private decimal _powerTarget;
         public decimal PowerTarget
