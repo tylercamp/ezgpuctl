@@ -18,14 +18,14 @@ namespace GPUControl.ViewModels
             this.parent = parent;
             this.policy = policy;
 
-            _pendingLabel = policy.Label;
+            _pendingName = policy.Name;
 
             IsReadOnly = false;
 
             Profiles = new ObservableCollection<GpuOverclockProfileViewModel>(
                 from profileName in policy.OrderedProfileNames
                 join profileVm in parent.Profiles
-                on profileName equals profileVm.Label
+                on profileName equals profileVm.Name
                 select profileVm
             );
 
@@ -39,7 +39,7 @@ namespace GPUControl.ViewModels
 
             IsReadOnly = true;
 
-            _pendingLabel = policy.Label;
+            _pendingName = policy.Name;
 
             Profiles = new ObservableCollection<GpuOverclockProfileViewModel>(profileVms);
             Rules = new ObservableCollection<ProgramPolicyRuleViewModel>();
@@ -49,7 +49,7 @@ namespace GPUControl.ViewModels
         {
             var policy = new Model.GpuOverclockPolicy("Default")
             {
-                OrderedProfileNames = new List<string>() { defaultProfile.Label },
+                OrderedProfileNames = new List<string>() { defaultProfile.Name },
                 Rules = new List<Model.ProgramPolicyRule>()
             };
 
@@ -58,31 +58,31 @@ namespace GPUControl.ViewModels
 
         public bool IsReadOnly { get; private set; }
 
-        private string _pendingLabel;
-        public string Label
+        private string _pendingName;
+        public string Name
         {
-            get => _pendingLabel;
+            get => _pendingName;
             set
             {
                 if (IsReadOnly) throw new InvalidOperationException();
 
-                _pendingLabel = value;
+                _pendingName = value;
                 OnPropertyChanged();
             }
         }
 
-        public void ApplyPendingLabel()
+        public void ApplyPendingName()
         {
             if (IsReadOnly) throw new InvalidOperationException();
 
-            policy.Label = _pendingLabel;
+            policy.Name = _pendingName;
         }
 
-        public void RevertPendingLabel()
+        public void RevertPendingName()
         {
             if (IsReadOnly) throw new InvalidOperationException();
 
-            Label = policy.Label;
+            Name = policy.Name;
         }
 
         public ObservableCollection<GpuOverclockProfileViewModel> Profiles { get; }

@@ -14,7 +14,7 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <TextBox Margin="10,10,10,10" TextWrapping="Wrap" Text="{Binding Label, Mode=TwoWay}" VerticalAlignment="Top" FontSize="20"/>
+        <TextBox Margin="10,10,10,10" TextWrapping="Wrap" Text="{Binding Name, Mode=TwoWay}" VerticalAlignment="Top" FontSize="20"/>
         <ScrollViewer Grid.Row="1">
             <ItemsControl ItemsSource="{Binding Overclocks}" ScrollViewer.CanContentScroll="True" ScrollViewer.HorizontalScrollBarVisibility="Visible">
                 <ItemsControl.ItemsPanel>
@@ -30,9 +30,9 @@
             </ItemsControl>
         </ScrollViewer>
         <StackPanel Grid.Row="2" Margin="0,0,20,0" Orientation="Horizontal" FlowDirection="RightToLeft">
-            <Button Margin="5,5,5,5" Padding="5,2,5,2">Save</Button>
-            <Button Margin="5,5,5,5" Padding="5,2,5,2">Cancel</Button>
-            <Button Margin="20,5,5,5" Padding="5,2,5,2">Revert Changes</Button>
+            <Button Margin="5,5,5,5" Padding="5,2,5,2" Click="SaveButton_Click">Save</Button>
+            <Button Margin="5,5,5,5" Padding="5,2,5,2" Click="CancelButton_Click">Cancel</Button>
+            <Button Margin="20,5,5,5" Padding="5,2,5,2" Click="RevertButton_Click">Revert Changes</Button>
         </StackPanel>
     </Grid>
 </Window>

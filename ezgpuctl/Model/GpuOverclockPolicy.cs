@@ -9,12 +9,12 @@ namespace GPUControl.Model
 {
     public class GpuOverclockPolicy
     {
-        public GpuOverclockPolicy(string label)
+        public GpuOverclockPolicy(string name)
         {
-            Label = label;
+            Name = name;
         }
 
-        public string Label { get; set; }
+        public string Name { get; set; }
         public List<ProgramPolicyRule> Rules { get; set; } = new List<ProgramPolicyRule>();
         public List<string> OrderedProfileNames { get; set; } = new List<string>();
 

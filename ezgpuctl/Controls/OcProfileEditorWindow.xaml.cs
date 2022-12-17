@@ -28,5 +28,36 @@ namespace GPUControl.Controls
         }
 
         public event Func<string, bool>? NewNameSelected;
+
+        protected GpuOverclockProfileViewModel ViewModel => DataContext as GpuOverclockProfileViewModel;
+
+        private void SaveButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (NewNameSelected?.Invoke(ViewModel.Name) != true)
+            {
+                MessageBox.Show($"The name \"{ViewModel.Name}\" is already in use by another profile.");
+                return;
+            }
+
+            ViewModel.ApplyChanges();
+
+            this.DialogResult = true;
+            this.Close();
+        }
+
+        private void CancelButton_Click(object sender, RoutedEventArgs e)
+        {
+            ViewModel.RevertChanges();
+            ViewModel.RevertPendingName();
+
+            this.DialogResult = false;
+            this.Close();
+        }
+
+        private void RevertButton_Click(object sender, RoutedEventArgs e)
+        {
+            ViewModel.RevertChanges();
+            ViewModel.RevertPendingName();
+        }
     }
 }

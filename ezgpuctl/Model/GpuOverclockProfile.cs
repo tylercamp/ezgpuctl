@@ -10,12 +10,12 @@ namespace GPUControl.Model
 {
     public class GpuOverclockProfile
     {
-        public GpuOverclockProfile(string label)
+        public GpuOverclockProfile(string name)
         {
-            Label = label;
+            Name = name;
         }
 
-        public string Label { get; set; }
+        public string Name { get; set; }
         public List<GpuOverclock> OverclockSettings { get; set; } = new List<GpuOverclock>();
 
         public static readonly string DefaultProfileName = "Default";

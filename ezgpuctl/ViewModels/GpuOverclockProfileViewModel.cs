@@ -17,7 +17,7 @@ namespace GPUControl.ViewModels
         // only for XAML preview
         public GpuOverclockProfileViewModel()
         {
-            _pendingLabel = "Profile Label";
+            _pendingName = "Profile Name";
             IsReadOnly = false;
 
             Overclocks = new ReadOnlyCollection<GpuOverclockViewModel>(
@@ -28,7 +28,7 @@ namespace GPUControl.ViewModels
         private GpuOverclockProfileViewModel(GpuOverclockProfile profile, IEnumerable<GpuOverclockViewModel> overclocks)
         {
             this.profile = profile;
-            _pendingLabel = profile.Label;
+            _pendingName = profile.Name;
             Overclocks = new ReadOnlyCollection<GpuOverclockViewModel>(overclocks.ToList());
             IsReadOnly = true;
         }
@@ -36,7 +36,7 @@ namespace GPUControl.ViewModels
         public GpuOverclockProfileViewModel(List<PhysicalGPU> gpus, GpuOverclockProfile profile)
         {
             this.profile = profile;
-            _pendingLabel = profile.Label;
+            _pendingName = profile.Name;
 
             IsReadOnly = false;
             Overclocks = new ReadOnlyCollection<GpuOverclockViewModel>(
@@ -53,10 +53,9 @@ namespace GPUControl.ViewModels
                     }
                     else
                     {
-                        return new GpuOverclockViewModel(wrapper, new GpuOverclock
-                        {
-                            GpuId = gpu.GPUId
-                        });
+                        var newOc = new GpuOverclock { GpuId = gpu.GPUId };
+                        this.profile.OverclockSettings.Add(newOc);
+                        return new GpuOverclockViewModel(wrapper, newOc);
                     }
                 }).ToList()
             );
@@ -76,30 +75,69 @@ namespace GPUControl.ViewModels
 
         public bool IsReadOnly { get; private set; }
 
-        private string _pendingLabel;
-        public string Label
+        private string _pendingName;
+        public string Name
         {
-            get => _pendingLabel;
+            get => _pendingName;
             set
             {
                 if (IsReadOnly) throw new InvalidOperationException();
 
-                _pendingLabel = value;
+                _pendingName = value;
                 OnPropertyChanged();
             }
         }
 
-        public void ApplyPendingLabel()
+        public void ApplyPendingName()
         {
-            profile.Label = _pendingLabel;
+            var oldName = profile.Name;
+            profile.Name = _pendingName;
+
+            NameSaved?.Invoke(oldName, profile.Name);
         }
 
-        public void RevertPendingLabel()
+        public void RevertPendingName()
         {
-            Label = profile.Label;
+            Name = profile.Name;
+        }
+
+        public string Label
+        {
+            get
+            {
+                var ocSummary = Overclocks
+                    .Select(oc =>
+                    {
+                        var parts = new List<string>();
+                        if (oc.IsStock) parts.Add("stock settings");
+                        else
+                        {
+                            if (oc.UsesPowerTarget) parts.Add($"power: {oc.PowerTarget}%");
+                            if (oc.UsesCoreClockOffset) parts.Add($"core: {oc.CoreClockOffset}MHz");
+                            if (oc.UsesMemoryClockOffset) parts.Add($"memory: {oc.MemoryClockOffset}MHz");
+                        }
+
+                        if (parts.Count > 0)
+                        {
+                            return $"[#{oc.GpuId} - {string.Join(", ", parts)}]";
+                        }
+                        else
+                        {
+                            return "";
+                        }
+                    })
+                    .Where(s => s.Length > 0)
+                    .ToList();
+
+                if (ocSummary.Count > 0) return $"{Name} {string.Join(" ", ocSummary)}";
+                else return $"{Name} (no OCs applied)";
+            }
         }
 
         public ReadOnlyCollection<GpuOverclockViewModel> Overclocks { get; private set; }
+
+        // (OldName, NewName)
+        public event Action<string, string> NameSaved;
 
         public bool HasChanges => Overclocks.Any(oc => oc.HasChanges);
         public void ApplyChanges()

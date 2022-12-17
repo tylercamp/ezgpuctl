@@ -130,16 +130,23 @@ namespace GPUControl
 
         private void AddProfileButton_Click(object sender, RoutedEventArgs e)
         {
-            var newProfile = new GpuOverclockProfile("New Profile");
+            var newProfileBaseName = "New Profile";
+            var newProfileName = Enumerable
+                .Range(0, 1000)
+                .Select(i => i == 0 ? newProfileBaseName : $"{newProfileBaseName} ({i})")
+                .Where(l => !_viewModel.Settings.Profiles.Any(p => p.Name == l))
+                .First();
+
+            var newProfile = new GpuOverclockProfile(newProfileName);
             var newProfileVm = new GpuOverclockProfileViewModel(_gpus, newProfile);
             var editorWindow = new OcProfileEditorWindow();
             editorWindow.DataContext = newProfileVm;
             
-            editorWindow.NewNameSelected += name => _settings.Profiles.Any(p => p.Label == name);
+            editorWindow.NewNameSelected += name => !_settings.Profiles.Any(p => p.Name == name);
 
             if (editorWindow.ShowDialog() == true)
             {
-                newProfileVm.ApplyPendingLabel();
+                newProfileVm.ApplyPendingName();
                 newProfileVm.ApplyChanges();
                 _viewModel.Settings.AddProfile(newProfile, newProfileVm);
             }

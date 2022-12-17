@@ -28,7 +28,7 @@
                 <ListBox Grid.Row="1" ItemsSource="{Binding Policies}" SelectedItem="{Binding SelectedPolicy, Mode=TwoWay}">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
-                            <Label Content="{Binding Label}" />
+                            <Label Content="{Binding Name}" />
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>

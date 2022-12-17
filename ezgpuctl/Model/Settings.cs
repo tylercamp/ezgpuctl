@@ -34,7 +34,7 @@ namespace GPUControl.Model
             (
                 from name in policy.OrderedProfileNames
                 from profile in Profiles
-                where profile.Label == name
+                where profile.Name == name
                 select profile
             ).ToList();
 

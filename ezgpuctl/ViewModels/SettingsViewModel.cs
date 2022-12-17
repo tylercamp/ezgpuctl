@@ -20,31 +20,60 @@ namespace GPUControl.ViewModels
             this.settings = settings;
 
             var defaultProfile = GpuOverclockProfileViewModel.GetDefault(gpus);
+            var profileVms = settings.Profiles.Select(p => new GpuOverclockProfileViewModel(gpus, p)).ToList();
+            profileVms.Add(defaultProfile);
 
             Profiles = new ObservableCollection<GpuOverclockProfileViewModel>(
-                settings.Profiles.Select(p => new GpuOverclockProfileViewModel(gpus, p))
+                profileVms.OrderBy(p => p.Name)
             );
-
-            Profiles.Add(defaultProfile);
+            foreach (var vm in Profiles) vm.NameSaved += HandleProfileLabelChanged;
 
             Policies = new ObservableCollection<GpuOverclockPolicyViewModel>(
                 settings.Policies.Select(p => new GpuOverclockPolicyViewModel(this, p))
             );
-
             Policies.Add(GpuOverclockPolicyViewModel.GetDefault(this, defaultProfile));
         }
 
         public ObservableCollection<GpuOverclockPolicyViewModel> Policies { get; private set; }
         public ObservableCollection<GpuOverclockProfileViewModel> Profiles { get; private set; }
 
+        // keep profiles list sorted alphabetically
+        private void HandleProfileLabelChanged(string oldLabel, string newLabel)
+        {
+            if (oldLabel == newLabel) return;
+
+            var oldSorting = Profiles.Select(p => p.Name).ToList();
+            var newSorting = Profiles.Select(p => p.Name).OrderBy(l => l).ToList();
+
+            var oldIdx = oldSorting.IndexOf(newLabel);
+            var newIdx = newSorting.IndexOf(newLabel);
+
+            if (oldIdx == newIdx) return;
+
+            Profiles.Move(oldIdx, newIdx);
+        }
+
         public void AddPolicy(GpuOverclockPolicy policy, GpuOverclockPolicyViewModel vm)
         {
-            throw new NotImplementedException();
+            Policies.Insert(0, vm);
+            settings.Policies.Insert(0, policy);
+            settings.Save();
         }
 
         public void AddProfile(GpuOverclockProfile profile, GpuOverclockProfileViewModel vm)
         {
-            throw new NotImplementedException();
+            var orderedProfileNames = Profiles
+                .Concat(new List<GpuOverclockProfileViewModel>() { vm })
+                .Select(p => p.Name)
+                .OrderBy(l => l)
+                .ToList();
+
+            var newIndex = orderedProfileNames.IndexOf(vm.Name);
+            Profiles.Insert(newIndex, vm);
+            settings.Profiles.Add(profile);
+            settings.Save();
+
+            vm.NameSaved += HandleProfileLabelChanged;
         }
     }
 }

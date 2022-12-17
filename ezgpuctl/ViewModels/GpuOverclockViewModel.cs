@@ -186,6 +186,8 @@ namespace GPUControl.ViewModels
                 _pendingPowerTarget != overclock.PowerTarget;
         }
 
+        public bool IsStock => _pendingCoreOffset == 0 && _pendingMemoryOffset == 0 && _pendingPowerTarget == 100;
+
         public Model.GpuOverclock OverclockPreview
         {
             get => new()
