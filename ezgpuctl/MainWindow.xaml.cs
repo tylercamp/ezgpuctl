@@ -95,6 +95,8 @@ namespace GPUControl
 
         public MainWindow()
         {
+            ProcessMonitor.Start();
+
             NVIDIA.Initialize();
             _settings = Settings.LoadFrom("settings.json");
 
@@ -125,6 +127,7 @@ namespace GPUControl
         {
             base.OnClosed(e);
 
+            ProcessMonitor.Stop();
             NVIDIA.Unload();
         }
 
@@ -140,7 +143,7 @@ namespace GPUControl
             var newProfile = new GpuOverclockProfile(newProfileName);
             var newProfileVm = new GpuOverclockProfileViewModel(_gpus, newProfile);
             var editorWindow = new OcProfileEditorWindow();
-            editorWindow.DataContext = newProfileVm;
+            editorWindow.ViewModel = newProfileVm;
             
             editorWindow.NewNameSelected += name => !_settings.Profiles.Any(p => p.Name == name);
 
@@ -149,6 +152,28 @@ namespace GPUControl
                 newProfileVm.ApplyPendingName();
                 newProfileVm.ApplyChanges();
                 _viewModel.Settings.AddProfile(newProfile, newProfileVm);
+            }
+        }
+
+        private void AddPolicyButton_Click(object sender, RoutedEventArgs e)
+        {
+            var newPolicyBaseName = "New Policy";
+            var newPolicyName = Enumerable
+                .Range(0, 1000)
+                .Select(i => i == 0 ? newPolicyBaseName : $"{newPolicyBaseName} ({i})")
+                .Where(l => !_viewModel.Settings.Profiles.Any(p => p.Name == l))
+                .First();
+
+            var newPolicy = new GpuOverclockPolicy(newPolicyName);
+            var newPolicyVm = new GpuOverclockPolicyViewModel(_viewModel.Settings, newPolicy);
+            var editorWindow = new OcPolicyEditorWindow();
+
+            newPolicyVm.AvailableProgramNames = ProcessMonitor.ProgramNames!;
+            editorWindow.ViewModel = newPolicyVm;
+
+            if (editorWindow.ShowDialog() == true)
+            {
+
             }
         }
     }

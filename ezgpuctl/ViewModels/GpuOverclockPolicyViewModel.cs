@@ -12,8 +12,27 @@ namespace GPUControl.ViewModels
     public class GpuOverclockPolicyViewModel : ViewModel
     {
         GpuOverclockPolicy policy;
-        SettingsViewModel parent;
-        public GpuOverclockPolicyViewModel(SettingsViewModel parent, GpuOverclockPolicy policy)
+        SettingsViewModel? parent;
+
+        // for XAML design view only!
+        public GpuOverclockPolicyViewModel()
+        {
+            _pendingName = "New Policy";
+            parent = null;
+
+            Profiles = new ObservableCollection<GpuOverclockProfileViewModel>();
+            Profiles.Add(new GpuOverclockProfileViewModel());
+
+            Rules = new ObservableCollection<ProgramPolicyRuleViewModel>();
+            Rules.Add(new ProgramPolicyRuleViewModel(new ProgramPolicyRule()
+            {
+                Negated = true,
+                ProgramName = "program.exe"
+            }));
+        }
+
+        // for normal use
+        public GpuOverclockPolicyViewModel(SettingsViewModel? parent, GpuOverclockPolicy policy)
         {
             this.parent = parent;
             this.policy = policy;
@@ -32,9 +51,11 @@ namespace GPUControl.ViewModels
             Rules = new ObservableCollection<ProgramPolicyRuleViewModel>(policy.Rules.Select(r => new ProgramPolicyRuleViewModel(r)));
         }
 
-        private GpuOverclockPolicyViewModel(SettingsViewModel parent, GpuOverclockPolicy policy, IEnumerable<GpuOverclockProfileViewModel> profileVms)
+
+        // for default policy
+        private GpuOverclockPolicyViewModel(GpuOverclockPolicy policy, IEnumerable<GpuOverclockProfileViewModel> profileVms)
         {
-            this.parent = parent;
+            this.parent = null;
             this.policy = policy;
 
             IsReadOnly = true;
@@ -45,15 +66,15 @@ namespace GPUControl.ViewModels
             Rules = new ObservableCollection<ProgramPolicyRuleViewModel>();
         }
 
-        public static GpuOverclockPolicyViewModel GetDefault(SettingsViewModel parent, GpuOverclockProfileViewModel defaultProfile)
+        public static GpuOverclockPolicyViewModel GetDefault(GpuOverclockProfileViewModel defaultProfile)
         {
             var policy = new Model.GpuOverclockPolicy("Default")
             {
                 OrderedProfileNames = new List<string>() { defaultProfile.Name },
-                Rules = new List<Model.ProgramPolicyRule>()
+                Rules = new List<Model.ProgramPolicyRule>(),
             };
 
-            return new GpuOverclockPolicyViewModel(parent, policy, new List<GpuOverclockProfileViewModel>() { defaultProfile });
+            return new GpuOverclockPolicyViewModel(policy, new List<GpuOverclockProfileViewModel>() { defaultProfile });
         }
 
         public bool IsReadOnly { get; private set; }
@@ -84,6 +105,10 @@ namespace GPUControl.ViewModels
 
             Name = policy.Name;
         }
+
+        public List<string> AvailableProgramNames { get; set; }
+
+        public List<GpuOverclockProfileViewModel> AvailableProfiles => parent?.Profiles?.Where(p => !Profiles.Contains(p))?.ToList() ?? new List<GpuOverclockProfileViewModel>();
 
         public ObservableCollection<GpuOverclockProfileViewModel> Profiles { get; }
         public ObservableCollection<ProgramPolicyRuleViewModel> Rules { get; }

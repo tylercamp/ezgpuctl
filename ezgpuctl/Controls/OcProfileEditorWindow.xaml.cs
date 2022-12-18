@@ -29,7 +29,11 @@ namespace GPUControl.Controls
 
         public event Func<string, bool>? NewNameSelected;
 
-        protected GpuOverclockProfileViewModel ViewModel => DataContext as GpuOverclockProfileViewModel;
+        public GpuOverclockProfileViewModel ViewModel
+        {
+            get => (DataContext as GpuOverclockProfileViewModel)!;
+            set => DataContext = value;
+        }
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {

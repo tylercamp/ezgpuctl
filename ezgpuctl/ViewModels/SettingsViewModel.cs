@@ -31,7 +31,7 @@ namespace GPUControl.ViewModels
             Policies = new ObservableCollection<GpuOverclockPolicyViewModel>(
                 settings.Policies.Select(p => new GpuOverclockPolicyViewModel(this, p))
             );
-            Policies.Add(GpuOverclockPolicyViewModel.GetDefault(this, defaultProfile));
+            Policies.Add(GpuOverclockPolicyViewModel.GetDefault(defaultProfile));
         }
 
         public ObservableCollection<GpuOverclockPolicyViewModel> Policies { get; private set; }
