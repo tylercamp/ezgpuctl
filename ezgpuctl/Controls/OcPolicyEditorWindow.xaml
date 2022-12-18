@@ -72,7 +72,7 @@
                         <Button Content="Move to Bottom" IsEnabled="{Binding CanMoveToBottom}" Click="MoveProfileBottomButton_Click" />
                     </StackPanel>
 
-                    <ListBox Grid.Column="0" ItemsSource="{Binding Policy.Profiles}" SelectedItem="{Binding SelectedProfile, Mode=TwoWay}" Grid.Row="1">
+                    <ListBox Grid.Column="0" ItemsSource="{Binding Policy.PendingProfiles}" SelectedItem="{Binding SelectedProfile, Mode=TwoWay}" Grid.Row="1">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding Label}" />
@@ -99,7 +99,7 @@
                         <Button Content="Remove" IsEnabled="{Binding HasSelectedRule}" HorizontalAlignment="Left" VerticalAlignment="Top" Width="60" Click="RemoveProgramButton_Click" />
                     </StackPanel>
 
-                    <ListView Grid.Row="1" ItemsSource="{Binding Policy.Rules}" SelectedItem="{Binding SelectedRule, Mode=TwoWay}">
+                    <ListView Grid.Row="1" ItemsSource="{Binding Policy.PendingRules}" SelectedItem="{Binding SelectedRule, Mode=TwoWay}">
                         <ListView.View>
                             <GridView>
                                 <GridView.ColumnHeaderContainerStyle>
@@ -128,7 +128,7 @@
             </GroupBox>
         </Grid>
 
-        <Button Content="Save" Margin="0,27,24,0" Grid.Row="2" VerticalAlignment="Top" HorizontalAlignment="Right" Width="29"/>
+        <Button Content="Save" Margin="0,27,24,0" Grid.Row="2" VerticalAlignment="Top" HorizontalAlignment="Right" Width="29" Click="SaveButton_Click"/>
         <Button Content="Cancel" Margin="0,27,80,0" Grid.Row="2" VerticalAlignment="Top" HorizontalAlignment="Right" Width="39"/>
         <Button Content="Revert" Margin="0,27,212,0" Grid.Row="2" VerticalAlignment="Top" HorizontalAlignment="Right" Width="37"/>
 

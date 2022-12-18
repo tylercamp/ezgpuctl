@@ -20,15 +20,18 @@ namespace GPUControl.ViewModels
             _pendingName = "New Policy";
             parent = null;
 
-            Profiles = new ObservableCollection<GpuOverclockProfileViewModel>();
-            Profiles.Add(new GpuOverclockProfileViewModel());
+            _profiles = new ObservableCollection<GpuOverclockProfileViewModel>();
+            _profiles.Add(new GpuOverclockProfileViewModel());
 
-            Rules = new ObservableCollection<ProgramPolicyRuleViewModel>();
-            Rules.Add(new ProgramPolicyRuleViewModel(new ProgramPolicyRule()
+            _rules = new ObservableCollection<ProgramPolicyRuleViewModel>();
+            _rules .Add(new ProgramPolicyRuleViewModel(new ProgramPolicyRule()
             {
                 Negated = true,
                 ProgramName = "program.exe"
             }));
+
+            _pendingProfiles = _profiles;
+            _pendingRules = _rules;
         }
 
         // for normal use
@@ -41,14 +44,17 @@ namespace GPUControl.ViewModels
 
             IsReadOnly = false;
 
-            Profiles = new ObservableCollection<GpuOverclockProfileViewModel>(
+            _profiles = new ObservableCollection<GpuOverclockProfileViewModel>(
                 from profileName in policy.OrderedProfileNames
                 join profileVm in parent.Profiles
                 on profileName equals profileVm.Name
                 select profileVm
             );
 
-            Rules = new ObservableCollection<ProgramPolicyRuleViewModel>(policy.Rules.Select(r => new ProgramPolicyRuleViewModel(r)));
+            _rules = new ObservableCollection<ProgramPolicyRuleViewModel>(policy.Rules.Select(r => new ProgramPolicyRuleViewModel(r)));
+
+            _pendingProfiles = new ObservableCollection<GpuOverclockProfileViewModel>(Profiles);
+            _pendingRules = new ObservableCollection<ProgramPolicyRuleViewModel>(Rules);
         }
 
 
@@ -62,8 +68,11 @@ namespace GPUControl.ViewModels
 
             _pendingName = policy.Name;
 
-            Profiles = new ObservableCollection<GpuOverclockProfileViewModel>(profileVms);
-            Rules = new ObservableCollection<ProgramPolicyRuleViewModel>();
+            _profiles = new ObservableCollection<GpuOverclockProfileViewModel>(profileVms);
+            _rules = new ObservableCollection<ProgramPolicyRuleViewModel>();
+
+            _pendingProfiles = Profiles;
+            _pendingRules = Rules;
         }
 
         public static GpuOverclockPolicyViewModel GetDefault(GpuOverclockProfileViewModel defaultProfile)
@@ -92,24 +101,59 @@ namespace GPUControl.ViewModels
             }
         }
 
-        public void ApplyPendingName()
-        {
-            if (IsReadOnly) throw new InvalidOperationException();
-
-            policy.Name = _pendingName;
-        }
-
-        public void RevertPendingName()
-        {
-            if (IsReadOnly) throw new InvalidOperationException();
-
-            Name = policy.Name;
-        }
-
         public List<GpuOverclockProfileViewModel> AvailableProfiles => parent?.Profiles?.Where(p => !Profiles.Contains(p))?.ToList() ?? new List<GpuOverclockProfileViewModel>();
 
-        public ObservableCollection<GpuOverclockProfileViewModel> Profiles { get; }
-        public ObservableCollection<ProgramPolicyRuleViewModel> Rules { get; }
+        private ObservableCollection<GpuOverclockProfileViewModel> _profiles;
+        public ObservableCollection<GpuOverclockProfileViewModel> Profiles
+        {
+            get => _profiles;
+            set
+            {
+                if (_profiles != value)
+                {
+                    _profiles = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        private ObservableCollection<ProgramPolicyRuleViewModel> _rules;
+        public ObservableCollection<ProgramPolicyRuleViewModel> Rules
+        {
+            get => _rules;
+            set
+            {
+                if (_rules != value)
+                {
+                    _rules = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        private ObservableCollection<GpuOverclockProfileViewModel> _pendingProfiles;
+        public ObservableCollection<GpuOverclockProfileViewModel> PendingProfiles
+        {
+            get => _pendingProfiles;
+            set
+            {
+                _pendingProfiles = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private ObservableCollection<ProgramPolicyRuleViewModel> _pendingRules;
+        public ObservableCollection<ProgramPolicyRuleViewModel> PendingRules
+        {
+            get => _pendingRules;
+            set
+            {
+                _pendingRules = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public GpuOverclockPolicy ModelPolicy => policy;
 
         // TODO - Attach to HasPendingChanges property event for sub-objects and raise change for this VM's HasPendingChanges
         // TODO - Ability to revert changes to the list of profiles / rules
@@ -120,7 +164,22 @@ namespace GPUControl.ViewModels
         {
             if (IsReadOnly) throw new InvalidOperationException();
 
-            
+            policy.Name = _pendingName;
+
+            policy.Rules = Rules.Select(vm => new ProgramPolicyRule { ProgramName = vm.ProgramName, Negated = vm.Negated }).ToList();
+            policy.OrderedProfileNames = Profiles.Select(vm => vm.Name).ToList();
+
+            Profiles = PendingProfiles;
+            Rules = PendingRules;
+        }
+
+        public void RevertPendingChanges()
+        {
+            if (IsReadOnly) throw new InvalidOperationException();
+
+            Name = policy.Name;
+            PendingProfiles = Profiles;
+            PendingRules = Rules;
         }
     }
 }

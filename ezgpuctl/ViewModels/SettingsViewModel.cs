@@ -75,5 +75,28 @@ namespace GPUControl.ViewModels
 
             vm.NameSaved += HandleProfileLabelChanged;
         }
+
+        public void RemovePolicy(GpuOverclockPolicyViewModel policy)
+        {
+            Policies.Remove(policy);
+            settings.Policies.Remove(policy.ModelPolicy);
+            settings.Save();
+        }
+
+        public void RemoveProfile(GpuOverclockProfileViewModel profile)
+        {
+            Profiles.Remove(profile);
+            settings.Profiles.Remove(profile.ModelProfile);
+
+            foreach (var policy in Policies)
+            {
+                policy.Profiles.Remove(profile);
+                policy.PendingProfiles.Remove(profile);
+
+                policy.ModelPolicy.OrderedProfileNames.Remove(profile.Name);
+            }
+
+            settings.Save();
+        }
     }
 }

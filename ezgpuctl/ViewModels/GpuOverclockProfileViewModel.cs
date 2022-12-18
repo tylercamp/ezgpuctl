@@ -101,6 +101,8 @@ namespace GPUControl.ViewModels
             Name = profile.Name;
         }
 
+        public GpuOverclockProfile ModelProfile => profile;
+
         public string Label
         {
             get

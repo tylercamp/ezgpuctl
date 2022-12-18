@@ -32,6 +32,8 @@
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
+                <Button Content="Remove" HorizontalAlignment="Left" Margin="299,10,0,0" VerticalAlignment="Top" Click="RemovePolicyButton_Click"/>
+                <Button Content="Edit" HorizontalAlignment="Left" Margin="247,0,0,0" VerticalAlignment="Center" Click="EditPolicyButton_Click"/>
             </Grid>
             <Grid Grid.Column="1">
                 <Grid.RowDefinitions>
@@ -47,6 +49,7 @@
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
+                <Button Content="Remove" HorizontalAlignment="Left" Margin="287,0,0,0" VerticalAlignment="Center" Click="RemoveProfileButton_Click"/>
             </Grid>
         </Grid>
         <Grid Grid.Row="1">

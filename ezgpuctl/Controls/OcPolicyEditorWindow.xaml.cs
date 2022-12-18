@@ -30,8 +30,8 @@ namespace GPUControl.Controls
         public OcPolicyEditorWindowViewModel(GpuOverclockPolicyViewModel policyViewModel)
         {
             Policy = policyViewModel;
-            Policy.Profiles.CollectionChanged += OnPolicyProfilesChanged;
-            Policy.Rules.CollectionChanged += OnPolicyRulesChanged;
+            Policy.PendingProfiles.CollectionChanged += OnPolicyProfilesChanged;
+            Policy.PendingRules.CollectionChanged += OnPolicyRulesChanged;
             AvailableProgramNames = ProcessMonitor.ProgramNames!;
         }
 
@@ -39,7 +39,7 @@ namespace GPUControl.Controls
         {
             OnPropertyChanged(nameof(CanAddProfile));
 
-            if (Policy.Profiles.Count == 0)
+            if (Policy.PendingProfiles.Count == 0)
             {
                 SelectedProfile = null;
             }
@@ -47,7 +47,7 @@ namespace GPUControl.Controls
 
         private void OnPolicyRulesChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
-            if (Policy.Rules.Count == 0)
+            if (Policy.PendingRules.Count == 0)
             {
                 SelectedRule = null;
             }
@@ -55,8 +55,8 @@ namespace GPUControl.Controls
 
         public void Dispose()
         {
-            Policy.Profiles.CollectionChanged -= OnPolicyProfilesChanged;
-            Policy.Rules.CollectionChanged -= OnPolicyRulesChanged;
+            Policy.PendingProfiles.CollectionChanged -= OnPolicyProfilesChanged;
+            Policy.PendingRules.CollectionChanged -= OnPolicyRulesChanged;
         }
 
         public GpuOverclockPolicyViewModel Policy { get; }
@@ -131,17 +131,22 @@ namespace GPUControl.Controls
             set => DataContext = value;
         }
 
+        protected override void OnClosed(EventArgs e)
+        {
+            ViewModel.Dispose();
+        }
+
         private void AddProgramButton_Click(object sender, RoutedEventArgs e)
         {
             var newProgramRule = new ProgramPolicyRule { Negated = false, ProgramName = "" };
             var newProgramRuleVm = new ProgramPolicyRuleViewModel(newProgramRule);
 
-            ViewModel.Policy.Rules.Add(newProgramRuleVm);
+            ViewModel.Policy.PendingRules.Add(newProgramRuleVm);
         }
 
         private void RemoveProgramButton_Click(object sender, RoutedEventArgs e)
         {
-            ViewModel.Policy.Rules.Remove(ViewModel.SelectedRule!);
+            ViewModel.Policy.PendingRules.Remove(ViewModel.SelectedRule!);
             ViewModel.SelectedRule = null;
         }
 
@@ -158,49 +163,55 @@ namespace GPUControl.Controls
         private void ProfileMenuItem_Click(object sender, RoutedEventArgs e)
         {
             var profileVm = ((sender as MenuItem)!.DataContext as GpuOverclockProfileViewModel)!;
-            ViewModel.Policy.Profiles.Add(profileVm);
+            ViewModel.Policy.PendingProfiles.Add(profileVm);
             ViewModel.NotifyForProfilesChanged();
         }
 
         private void RemoveProfileButton_Click(object sender, RoutedEventArgs e)
         {
-            ViewModel.Policy.Profiles.Remove(ViewModel.SelectedProfile!);
+            ViewModel.Policy.PendingProfiles.Remove(ViewModel.SelectedProfile!);
             ViewModel.SelectedProfile = null;        }
 
         private void MoveProfileUpButton_Click(object sender, RoutedEventArgs e)
         {
             var profile = ViewModel.SelectedProfile!;
-            var profileIdx = ViewModel.Policy.Profiles.IndexOf(profile);
+            var profileIdx = ViewModel.Policy.PendingProfiles.IndexOf(profile);
             
-            ViewModel.Policy.Profiles.Move(profileIdx, profileIdx - 1);
+            ViewModel.Policy.PendingProfiles.Move(profileIdx, profileIdx - 1);
             ViewModel.SelectedProfile = profile;
         }
 
         private void MoveProfileDownButton_Click(object sender, RoutedEventArgs e)
         {
             var profile = ViewModel.SelectedProfile!;
-            var profileIdx = ViewModel.Policy.Profiles.IndexOf(profile);
+            var profileIdx = ViewModel.Policy.PendingProfiles.IndexOf(profile);
 
-            ViewModel.Policy.Profiles.Move(profileIdx, profileIdx + 1);
+            ViewModel.Policy.PendingProfiles.Move(profileIdx, profileIdx + 1);
             ViewModel.SelectedProfile = profile;
         }
 
         private void MoveProfileTopButton_Click(object sender, RoutedEventArgs e)
         {
             var profile = ViewModel.SelectedProfile!;
-            var profileIdx = ViewModel.Policy.Profiles.IndexOf(profile);
+            var profileIdx = ViewModel.Policy.PendingProfiles.IndexOf(profile);
 
-            ViewModel.Policy.Profiles.Move(profileIdx, 0);
+            ViewModel.Policy.PendingProfiles.Move(profileIdx, 0);
             ViewModel.SelectedProfile = profile;
         }
 
         private void MoveProfileBottomButton_Click(object sender, RoutedEventArgs e)
         {
             var profile = ViewModel.SelectedProfile!;
-            var profileIdx = ViewModel.Policy.Profiles.IndexOf(profile);
+            var profileIdx = ViewModel.Policy.PendingProfiles.IndexOf(profile);
             
-            ViewModel.Policy.Profiles.Move(profileIdx, ViewModel.Policy.Profiles.Count - 1);
+            ViewModel.Policy.PendingProfiles.Move(profileIdx, ViewModel.Policy.Profiles.Count - 1);
             ViewModel.SelectedProfile = profile;
+        }
+
+        private void SaveButton_Click(object sender, RoutedEventArgs e)
+        {
+            DialogResult = true;
+            this.Close();
         }
     }
 }

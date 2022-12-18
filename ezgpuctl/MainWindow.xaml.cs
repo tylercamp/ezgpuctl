@@ -172,7 +172,47 @@ namespace GPUControl
 
             if (editorWindow.ShowDialog() == true)
             {
+                newPolicyVm.ApplyPendingChanges();
+                _viewModel.Settings.AddPolicy(newPolicy, newPolicyVm);
+            }
+        }
 
+        private void RemovePolicyButton_Click(object sender, RoutedEventArgs e)
+        {
+            var policy = _viewModel.SelectedPolicy!;
+            if (MessageBox.Show($"Are you sure you'd like to remove the policy '{policy.Name}'?", "Remove Policy", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+            {
+                _viewModel.Settings.RemovePolicy(policy);
+            }
+        }
+
+        private void EditPolicyButton_Click(object sender, RoutedEventArgs e)
+        {
+            var policy = _viewModel.SelectedPolicy!;
+            var editorWindow = new OcPolicyEditorWindow();
+            editorWindow.ViewModel = new OcPolicyEditorWindowViewModel(policy);
+
+            if (editorWindow.ShowDialog() == true)
+            {
+                policy.ApplyPendingChanges();
+                _settings.Save();
+            }
+        }
+
+        private void RemoveProfileButton_Click(object sender, RoutedEventArgs e)
+        {
+            var profile = _viewModel.SelectedProfile!;
+            var affectedPolicies = _viewModel.Policies.Where(pol => pol.Profiles.Contains(profile)).ToList();
+
+            string detailsMsg = "";
+            if (affectedPolicies.Count > 0)
+            {
+                detailsMsg = $" Removing this profile will affect {affectedPolicies.Count} policies.";
+            }
+
+            if (MessageBox.Show($"Are you sure you'd like to remove '{profile.Name}'?{detailsMsg}", "Remove Profile", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+            {
+                _viewModel.Settings.RemoveProfile(profile);
             }
         }
     }
