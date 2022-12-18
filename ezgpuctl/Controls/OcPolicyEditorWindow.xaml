@@ -7,7 +7,7 @@
         xmlns:controls="clr-namespace:GPUControl.Controls"
         mc:Ignorable="d"
         WindowStartupLocation="CenterOwner"
-        d:DataContext="{d:DesignInstance Type=vm:GpuOverclockPolicyViewModel, IsDesignTimeCreatable=True}"
+        d:DataContext="{d:DesignInstance Type=controls:OcPolicyEditorWindowViewModel, IsDesignTimeCreatable=True}"
         Title="Edit Policy" Height="463" Width="563">
     <Grid>
         <Grid.RowDefinitions>
@@ -15,7 +15,7 @@
             <RowDefinition Height="13*"/>
             <RowDefinition Height="2*"/>
         </Grid.RowDefinitions>
-        <TextBox Margin="10,10,10,10" TextWrapping="Wrap" FontSize="20" Text="{Binding Name, Mode=TwoWay}" VerticalAlignment="Top" Height="29"/>
+        <TextBox Margin="10,10,10,10" TextWrapping="Wrap" FontSize="20" Text="{Binding Policy.Name, Mode=TwoWay}" VerticalAlignment="Top" Height="29"/>
 
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
@@ -40,9 +40,9 @@
                                 <Setter Property="Width" Value="60" />
                             </Style>
                         </StackPanel.Resources>
-                        <Button Content="Add" Click="AddProfileButton_Click">
+                        <Button Content="Add" Click="AddProfileButton_Click" IsEnabled="{Binding CanAddProfile}">
                             <Button.ContextMenu>
-                                <ContextMenu ItemsSource="{Binding AvailableProfiles}">
+                                <ContextMenu ItemsSource="{Binding Policy.AvailableProfiles}">
                                     <ContextMenu.ItemTemplate>
                                         <DataTemplate>
                                             <MenuItem Header="{Binding Label}" Click="ProfileMenuItem_Click" />
@@ -52,8 +52,8 @@
                             </Button.ContextMenu>
                         </Button>
 
-                        <Button Content="Edit" />
-                        <Button Content="Remove" />
+                        <Button Content="Edit" IsEnabled="{Binding HasSelectedEditableProfile}" />
+                        <Button Content="Remove" IsEnabled="{Binding CanRemoveProfile}" Click="RemoveProfileButton_Click" />
                     </StackPanel>
 
                     <StackPanel Grid.Column="1" Margin="0,10,10,0" Grid.Row="1">
@@ -63,16 +63,16 @@
                             </Style>
                         </StackPanel.Resources>
 
-                        <Button Content="Move Up" />
-                        <Button Content="Move Down"/>
+                        <Button Content="Move Up" IsEnabled="{Binding CanMoveUp}" Click="MoveProfileUpButton_Click" />
+                        <Button Content="Move Down" IsEnabled="{Binding CanMoveDown}" Click="MoveProfileDownButton_Click" />
 
                         <Button Content="..." Visibility="Hidden" />
 
-                        <Button Content="Move to Top" />
-                        <Button Content="Move to Bottom" />
+                        <Button Content="Move to Top" IsEnabled="{Binding CanMoveToTop}" Click="MoveProfileTopButton_Click" />
+                        <Button Content="Move to Bottom" IsEnabled="{Binding CanMoveToBottom}" Click="MoveProfileBottomButton_Click" />
                     </StackPanel>
 
-                    <ListBox Grid.Column="0" ItemsSource="{Binding Profiles}" Grid.Row="1">
+                    <ListBox Grid.Column="0" ItemsSource="{Binding Policy.Profiles}" SelectedItem="{Binding SelectedProfile, Mode=TwoWay}" Grid.Row="1">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding Label}" />
@@ -95,11 +95,11 @@
                             </Style>
                         </StackPanel.Resources>
 
-                        <Button Content="Add" HorizontalAlignment="Left" VerticalAlignment="Top" Width="60" Click="AddProgramButton_Click"/>
-                        <Button Content="Remove" HorizontalAlignment="Left" VerticalAlignment="Top" Width="60"/>
+                        <Button Content="Add" IsEnabled="{Binding CanAddRule}" HorizontalAlignment="Left" VerticalAlignment="Top" Width="60" Click="AddProgramButton_Click"/>
+                        <Button Content="Remove" IsEnabled="{Binding HasSelectedRule}" HorizontalAlignment="Left" VerticalAlignment="Top" Width="60" Click="RemoveProgramButton_Click" />
                     </StackPanel>
 
-                    <ListView Grid.Row="1" ItemsSource="{Binding Rules}">
+                    <ListView Grid.Row="1" ItemsSource="{Binding Policy.Rules}" SelectedItem="{Binding SelectedRule, Mode=TwoWay}">
                         <ListView.View>
                             <GridView>
                                 <GridView.ColumnHeaderContainerStyle>

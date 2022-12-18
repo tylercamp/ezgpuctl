@@ -106,8 +106,6 @@ namespace GPUControl.ViewModels
             Name = policy.Name;
         }
 
-        public List<string> AvailableProgramNames { get; set; }
-
         public List<GpuOverclockProfileViewModel> AvailableProfiles => parent?.Profiles?.Where(p => !Profiles.Contains(p))?.ToList() ?? new List<GpuOverclockProfileViewModel>();
 
         public ObservableCollection<GpuOverclockProfileViewModel> Profiles { get; }

@@ -168,8 +168,7 @@ namespace GPUControl
             var newPolicyVm = new GpuOverclockPolicyViewModel(_viewModel.Settings, newPolicy);
             var editorWindow = new OcPolicyEditorWindow();
 
-            newPolicyVm.AvailableProgramNames = ProcessMonitor.ProgramNames!;
-            editorWindow.ViewModel = newPolicyVm;
+            editorWindow.ViewModel = new OcPolicyEditorWindowViewModel(newPolicyVm);
 
             if (editorWindow.ShowDialog() == true)
             {
