@@ -20,12 +20,21 @@ namespace GPUControl.Controls
     /// <summary>
     /// Interaction logic for OcProfileEditorView.xaml
     /// </summary>
-    public partial class OcProfileEditorWindow: Window
+    public partial class OcProfileEditorWindow : Window
     {
         public OcProfileEditorWindow()
         {
             InitializeComponent();
+            OriginalName = "";
         }
+
+        public OcProfileEditorWindow(string originalProfileName)
+        {
+            InitializeComponent();
+            OriginalName = originalProfileName;
+        }
+
+        public string OriginalName { get; }
 
         public event Func<string, bool>? NewNameSelected;
 
@@ -37,13 +46,11 @@ namespace GPUControl.Controls
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            if (NewNameSelected?.Invoke(ViewModel.Name) != true)
+            if (ViewModel.Name != OriginalName && NewNameSelected?.Invoke(ViewModel.Name) != true)
             {
                 MessageBox.Show($"The name \"{ViewModel.Name}\" is already in use by another profile.");
                 return;
             }
-
-            ViewModel.ApplyChanges();
 
             this.DialogResult = true;
             this.Close();
@@ -51,17 +58,13 @@ namespace GPUControl.Controls
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
-            ViewModel.RevertChanges();
-            ViewModel.RevertPendingName();
-
             this.DialogResult = false;
             this.Close();
         }
 
         private void RevertButton_Click(object sender, RoutedEventArgs e)
         {
-            ViewModel.RevertChanges();
-            ViewModel.RevertPendingName();
+            throw new NotImplementedException();
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using NvAPIWrapper.GPU;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using NvAPIWrapper.GPU;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace GPUControl.ViewModels
 {
-    public class GpuStatusViewModel : ViewModel
+    public class GpuStatusViewModel : ObservableObject
     {
         private GpuWrapper? gpu;
         

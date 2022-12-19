@@ -1,4 +1,5 @@
-﻿using GPUControl.Model;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using GPUControl.Model;
 using NvAPIWrapper.GPU;
 using System;
 using System.Collections.Generic;
@@ -10,14 +11,12 @@ using System.Threading.Tasks;
 
 namespace GPUControl.ViewModels
 {
-    public class GpuOverclockProfileViewModel : ViewModel
+    public partial class GpuOverclockProfileViewModel : ObservableObject
     {
-        GpuOverclockProfile profile;
-
         // only for XAML preview
         public GpuOverclockProfileViewModel()
         {
-            _pendingName = "Profile Name";
+            name = "Profile Name";
             IsReadOnly = false;
 
             Overclocks = new ReadOnlyCollection<GpuOverclockViewModel>(
@@ -27,16 +26,14 @@ namespace GPUControl.ViewModels
 
         private GpuOverclockProfileViewModel(GpuOverclockProfile profile, IEnumerable<GpuOverclockViewModel> overclocks)
         {
-            this.profile = profile;
-            _pendingName = profile.Name;
+            name = profile.Name;
             Overclocks = new ReadOnlyCollection<GpuOverclockViewModel>(overclocks.ToList());
             IsReadOnly = true;
         }
 
         public GpuOverclockProfileViewModel(List<PhysicalGPU> gpus, GpuOverclockProfile profile)
         {
-            this.profile = profile;
-            _pendingName = profile.Name;
+            name = profile.Name;
 
             IsReadOnly = false;
             Overclocks = new ReadOnlyCollection<GpuOverclockViewModel>(
@@ -54,7 +51,6 @@ namespace GPUControl.ViewModels
                     else
                     {
                         var newOc = new GpuOverclock { GpuId = gpu.GPUId };
-                        this.profile.OverclockSettings.Add(newOc);
                         return new GpuOverclockViewModel(wrapper, newOc);
                     }
                 }).ToList()
@@ -67,7 +63,7 @@ namespace GPUControl.ViewModels
 
             var profile = new Model.GpuOverclockProfile("Default Profile")
             {
-                OverclockSettings = overclockVms.Select(vm => vm.OverclockPreview).ToList()
+                OverclockSettings = overclockVms.Select(vm => vm.AsModelObject).ToList()
             };
 
             return new GpuOverclockProfileViewModel(profile, overclockVms);
@@ -75,33 +71,9 @@ namespace GPUControl.ViewModels
 
         public bool IsReadOnly { get; private set; }
 
-        private string _pendingName;
-        public string Name
-        {
-            get => _pendingName;
-            set
-            {
-                if (IsReadOnly) throw new InvalidOperationException();
-
-                _pendingName = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public void ApplyPendingName()
-        {
-            var oldName = profile.Name;
-            profile.Name = _pendingName;
-
-            NameSaved?.Invoke(oldName, profile.Name);
-        }
-
-        public void RevertPendingName()
-        {
-            Name = profile.Name;
-        }
-
-        public GpuOverclockProfile ModelProfile => profile;
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(Label))]
+        private string name;
 
         public string Label
         {
@@ -138,24 +110,9 @@ namespace GPUControl.ViewModels
 
         public ReadOnlyCollection<GpuOverclockViewModel> Overclocks { get; private set; }
 
-        // (OldName, NewName)
-        public event Action<string, string> NameSaved;
-
-        public bool HasChanges => Overclocks.Any(oc => oc.HasChanges);
-        public void ApplyChanges()
+        public GpuOverclockProfile AsModelObject => new GpuOverclockProfile(name)
         {
-            if (IsReadOnly) throw new InvalidOperationException();
-
-            foreach (var ocVm in Overclocks)
-                ocVm.ApplyChanges();
-        }
-
-        public void RevertChanges()
-        {
-            if (IsReadOnly) throw new InvalidOperationException();
-
-            foreach (var ocVm in Overclocks)
-                ocVm.RevertChanges();
-        }
+            OverclockSettings = Overclocks.Select(ovm => ovm.AsModelObject).ToList()
+        };
     }
 }

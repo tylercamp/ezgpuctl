@@ -1,28 +1,91 @@
-﻿using System;
+﻿using GPUControl.Model;
+using GPUControl.ViewModels;
+using NvAPIWrapper.GPU;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace GPUControl
 {
-    public class PolicyMonitor
+    public static class PolicyMonitor
     {
-        Model.Settings currentSettings;
+        public static TimeSpan UpdateInterval = TimeSpan.FromSeconds(5);
 
-        public PolicyMonitor(Model.Settings settings)
+        private class Context
         {
-            currentSettings = settings;
+            public CancellationTokenSource TokenSource { get; set; }
+            public Thread CurrentThread { get; set; }
         }
 
-        public void Start()
-        {
+        private static Context? currentContext = null;
 
+        public static event Action<List<string>> PoliciesApplied;
+
+        public static void Start(Settings settingsSource, GpuOverclockPolicy defaultPolicy, GpuOverclockProfile defaultProfile, List<PhysicalGPU> gpus)
+        {
+            if (currentContext != null) return;
+
+            currentContext = new Context { TokenSource = new CancellationTokenSource() };
+
+            currentContext.CurrentThread = new Thread(() =>
+            {
+                var logger = Serilog.Log.ForContext(typeof(PolicyMonitor));
+                var token = currentContext.TokenSource.Token;
+                while (!token.IsCancellationRequested)
+                {
+                    var finalOc = gpus.Select(gpu => new GpuOverclock() { GpuId = gpu.GPUId }).ToList();
+
+                    var currentSettings = settingsSource.Clone();
+                    currentSettings.Policies.Add(defaultPolicy);
+                    currentSettings.Profiles.Add(defaultProfile);
+
+                    var currentPrograms = ProcessMonitor.ProgramNames!;
+                    var matchingPolicies = currentSettings.Policies.Where(p => p.Rules.All(r => r.IsApplicable(currentPrograms))).ToList();
+
+                    logger.Debug("Matching policies: {0}", matchingPolicies.Select(p => p.Name));
+
+                    var matchingProfiles = matchingPolicies.SelectMany(currentSettings.ProfilesForPolicy).ToList();
+                        
+                    var ocs = matchingProfiles.SelectMany(profile => profile.OverclockSettings).ToList();
+
+                    logger.Debug("Found {0} profiles and {0} OCs", matchingProfiles.Count, ocs.Count(oc => oc.HasOcSettings));
+
+                    foreach (var oc in ocs.Reverse<GpuOverclock>())
+                    {
+                        foreach (var target in finalOc.Where(foc => foc.GpuId == oc.GpuId))
+                        {
+                            target.PowerTarget = oc.PowerTarget ?? target.PowerTarget;
+                            target.CoreClockOffset = oc.CoreClockOffset ?? target.CoreClockOffset;
+                            target.MemoryClockOffset = oc.MemoryClockOffset ?? target.MemoryClockOffset;
+                        }
+                    }
+
+                    logger.Debug("Created final OCs: {0}", finalOc);
+                    foreach (var oc in finalOc)
+                    {
+                        var wrapper = new GpuWrapper(gpus.Single(gpu => gpu.GPUId == oc.GpuId));
+                        wrapper.ApplyOC(oc);
+                    }
+
+                    PoliciesApplied?.Invoke(matchingPolicies.Select(p => p.Name).ToList());
+
+                    try { Task.Delay(UpdateInterval, token).Wait(); }
+                    catch { break; }
+                }
+            });
+
+            currentContext.CurrentThread.Start();
         }
 
-        public void Stop()
+        public static void Stop()
         {
+            if (currentContext == null) return;
 
+            currentContext.TokenSource.Cancel();
+            currentContext.CurrentThread.Join();
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using GPUControl.Model;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using GPUControl.Model;
 using NvAPIWrapper.GPU;
 using NvAPIWrapper.Native.GPU;
 using System;
@@ -9,32 +10,33 @@ using System.Threading.Tasks;
 
 namespace GPUControl.ViewModels
 {
-    public class GpuOverclockViewModel : ViewModel
+    public partial class GpuOverclockViewModel : ObservableObject
     {
         // only for XAML previews!
         public GpuOverclockViewModel()
         {
             GpuLabel = "GPU Label";
             IsReadOnly = false;
-            _pendingCoreOffset = 0;
-            _pendingMemoryOffset = 0;
-            _pendingPowerTarget = null;
+            coreClockOffset = 0;
+            memoryClockOffset = 0;
+            powerTarget = null;
 
             PowerTargetRange = new ValueRange(0, 100);
             CoreClockOffsetRange = new ValueRange(-1000, 1000);
             MemoryClockOffsetRange = new ValueRange(-1000, 1000);
+            GpuId = 0;
         }
 
-        GpuOverclock overclock;
         public GpuOverclockViewModel(GpuWrapper gpu, GpuOverclock overclock)
         {
-            this.overclock = overclock;
             this.IsReadOnly = false;
 
+            GpuId = gpu.GpuId;
+
             GpuLabel = gpu.Label;
-            this._pendingCoreOffset = overclock.CoreClockOffset;
-            this._pendingMemoryOffset = overclock.MemoryClockOffset;
-            this._pendingPowerTarget = overclock.PowerTarget;
+            coreClockOffset = overclock.CoreClockOffset;
+            memoryClockOffset = overclock.MemoryClockOffset;
+            powerTarget = overclock.PowerTarget;
 
             PowerTargetRange = gpu.Power.TargetPowerRange;
             CoreClockOffsetRange = gpu.Clocks.CoreClockOffsetRangeMhz;
@@ -64,165 +66,125 @@ namespace GPUControl.ViewModels
         public bool IsReadOnly { get; }
         public bool IsWriteAllowed => !IsReadOnly;
         
-        public uint GpuId
-        {
-            get => overclock.GpuId;
-        }
+        public uint GpuId { get; }
 
         public ValueRange CoreClockOffsetRange { get; }
+        public ValueRange MemoryClockOffsetRange { get; }
+        public ValueRange PowerTargetRange { get; }
 
-        private decimal? _pendingCoreOffset;
-        public decimal? CoreClockOffset
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(UsesCoreClockOffset))]
+        [NotifyPropertyChangedFor(nameof(CoreClockOffsetDisplayValue))]
+        private decimal? coreClockOffset;
+
+        public decimal CoreClockOffsetDisplayValue
         {
-            get => _pendingCoreOffset;
+            get => coreClockOffset ?? 0;
             set
             {
-                if (IsReadOnly) throw new InvalidOperationException();
-
-                var changedUse = _pendingCoreOffset.HasValue != value.HasValue;
-
-                _pendingCoreOffset = value;
+                coreClockOffset = value;
                 OnPropertyChanged();
-                OnPropertyChanged(nameof(HasChanges));
-
-                if (changedUse) OnPropertyChanged(nameof(UsesCoreClockOffset));
+                OnPropertyChanged(nameof(CoreClockOffset));
             }
         }
 
         public bool UsesCoreClockOffset
         {
-            get => _pendingCoreOffset.HasValue;
+            get => coreClockOffset.HasValue;
             set
             {
                 if (IsReadOnly) throw new InvalidOperationException();
 
-                if (value) _pendingCoreOffset = overclock.CoreClockOffset ?? 0;
-                else _pendingCoreOffset = null;
+                if (value) coreClockOffset = 0;
+                else coreClockOffset = null;
 
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(CoreClockOffset));
+                OnPropertyChanged(nameof(CoreClockOffsetDisplayValue));
                 OnPropertyChanged(nameof(CanChangeCoreClockOffset));
-                OnPropertyChanged(nameof(HasChanges));
             }
         }
 
-        public bool CanChangeCoreClockOffset => IsWriteAllowed && UsesCoreClockOffset;
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(UsesMemoryClockOffset))]
+        [NotifyPropertyChangedFor(nameof(MemoryClockOffsetDisplayValue))]
+        private decimal? memoryClockOffset;
 
-        public ValueRange MemoryClockOffsetRange { get; }
-
-        private decimal? _pendingMemoryOffset;
-        public decimal? MemoryClockOffset
+        public decimal MemoryClockOffsetDisplayValue
         {
-            get => _pendingMemoryOffset;
+            get => memoryClockOffset ?? 0;
             set
             {
-                if (IsReadOnly) throw new InvalidOperationException();
-
-                _pendingMemoryOffset = value;
+                memoryClockOffset = value;
                 OnPropertyChanged();
-                OnPropertyChanged(nameof(HasChanges));
+                OnPropertyChanged(nameof(MemoryClockOffset));
             }
         }
 
         public bool UsesMemoryClockOffset
         {
-            get => _pendingMemoryOffset.HasValue;
+            get => memoryClockOffset.HasValue;
             set
             {
                 if (IsReadOnly) throw new InvalidOperationException();
 
-                if (value) _pendingMemoryOffset = overclock.MemoryClockOffset ?? 0;
-                else _pendingMemoryOffset = null;
+                if (value) memoryClockOffset = 0;
+                else memoryClockOffset = null;
 
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(MemoryClockOffset));
-                OnPropertyChanged(nameof(HasChanges));
+                OnPropertyChanged(nameof(MemoryClockOffsetDisplayValue));
                 OnPropertyChanged(nameof(CanChangeMemoryClockOffset));
             }
         }
 
+        public bool CanChangeCoreClockOffset => IsWriteAllowed && UsesCoreClockOffset;
         public bool CanChangeMemoryClockOffset => IsWriteAllowed && UsesMemoryClockOffset;
 
-        public ValueRange PowerTargetRange { get; }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(UsesPowerTarget))]
+        [NotifyPropertyChangedFor(nameof(PowerTargetDisplayValue))]
+        private decimal? powerTarget;
 
-        private decimal? _pendingPowerTarget;
-        public decimal? PowerTarget
+        public decimal PowerTargetDisplayValue
         {
-            get => _pendingPowerTarget;
+            get => powerTarget ?? 0;
             set
             {
-                if (IsReadOnly) throw new InvalidOperationException();
-
-                _pendingPowerTarget = value;
+                powerTarget = value;
                 OnPropertyChanged();
-                OnPropertyChanged(nameof(HasChanges));
+                OnPropertyChanged(nameof(PowerTarget));
             }
         }
 
         public bool UsesPowerTarget
         {
-            get => _pendingPowerTarget.HasValue;
+            get => powerTarget.HasValue;
             set
             {
                 if (IsReadOnly) throw new InvalidOperationException();
 
-                if (value) _pendingPowerTarget = overclock.PowerTarget ?? 100;
-                else _pendingPowerTarget = null;
+                if (value) powerTarget = 100;
+                else powerTarget = null;
 
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(PowerTarget));
-                OnPropertyChanged(nameof(HasChanges));
+                OnPropertyChanged(nameof(PowerTargetDisplayValue));
                 OnPropertyChanged(nameof(CanChangePowerTarget));
             }
         }
 
         public bool CanChangePowerTarget => IsWriteAllowed && UsesPowerTarget;
 
-        public bool HasChanges
+        public bool IsStock => coreClockOffset == 0 && memoryClockOffset == 0 && powerTarget == 100;
+
+        public GpuOverclock AsModelObject => new GpuOverclock()
         {
-            get =>
-                _pendingCoreOffset != overclock.CoreClockOffset ||
-                _pendingMemoryOffset != overclock.MemoryClockOffset ||
-                _pendingPowerTarget != overclock.PowerTarget;
-        }
-
-        public bool IsStock => _pendingCoreOffset == 0 && _pendingMemoryOffset == 0 && _pendingPowerTarget == 100;
-
-        public Model.GpuOverclock OverclockPreview
-        {
-            get => new()
-            {
-                GpuId = GpuId,
-                CoreClockOffset = CoreClockOffset,
-                MemoryClockOffset = MemoryClockOffset,
-                PowerTarget = PowerTarget
-            };
-        }
-
-        public void ApplyChanges()
-        {
-            if (IsReadOnly) throw new InvalidOperationException();
-
-            overclock.CoreClockOffset = _pendingCoreOffset;
-            overclock.MemoryClockOffset = _pendingMemoryOffset;
-            overclock.PowerTarget = _pendingPowerTarget;
-
-            OnPropertyChanged(nameof(HasChanges));
-        }
-
-        public void RevertChanges()
-        {
-            if (IsReadOnly) throw new InvalidOperationException();
-
-            _pendingCoreOffset = overclock.CoreClockOffset;
-            _pendingMemoryOffset = overclock.MemoryClockOffset;
-            _pendingPowerTarget = overclock.PowerTarget;
-
-            OnPropertyChanged(nameof(CoreClockOffset));
-            OnPropertyChanged(nameof(MemoryClockOffset));
-            OnPropertyChanged(nameof(PowerTarget));
-
-            OnPropertyChanged(nameof(HasChanges));
-        }
+            GpuId = GpuId,
+            CoreClockOffset = coreClockOffset,
+            MemoryClockOffset = memoryClockOffset,
+            PowerTarget = powerTarget
+        };
     }
 }

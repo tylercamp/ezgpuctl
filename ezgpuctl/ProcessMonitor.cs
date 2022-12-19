@@ -29,14 +29,8 @@ namespace GPUControl
                     var processes = Process.GetProcesses();
                     ProgramNames = processes.Select(p => p.ProcessName).Distinct().OrderBy(n => n).ToList();
 
-                    try
-                    {
-                        Task.Delay(UpdateInterval, token).Wait();
-                    }
-                    catch
-                    {
-                        break;
-                    }
+                    try { Task.Delay(UpdateInterval, token).Wait(); }
+                    catch { break; }
                 }
             }).Start();
         }

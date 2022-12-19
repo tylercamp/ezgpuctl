@@ -55,7 +55,7 @@
                 
                 IsEnabled="{Binding CanChangePowerTarget}"
                 IsSnapToTickEnabled="True"
-                Value="{Binding PowerTarget, Mode=TwoWay}"
+                Value="{Binding PowerTargetDisplayValue, Mode=TwoWay}"
                 Minimum="{Binding PowerTargetRange.Min}" Maximum="{Binding PowerTargetRange.Max}"
                 
                 Margin="10,0,10,0"
@@ -92,7 +92,7 @@
                 VerticalAlignment="Center"
                 IsEnabled="{Binding CanChangeCoreClockOffset}"
                 Height="18"
-                Value="{Binding CoreClockOffset, Mode=TwoWay}"
+                Value="{Binding CoreClockOffsetDisplayValue, Mode=TwoWay}"
                 Minimum="{Binding CoreClockOffsetRange.Min}"
                 Maximum="{Binding CoreClockOffsetRange.Max}"
                 IsSnapToTickEnabled="True"
@@ -125,7 +125,7 @@
                 VerticalAlignment="Center"
                 IsEnabled="{Binding CanChangeMemoryClockOffset}"
                 Height="18"
-                Value="{Binding MemoryClockOffset, Mode=TwoWay}"
+                Value="{Binding MemoryClockOffsetDisplayValue, Mode=TwoWay}"
                 Minimum="{Binding MemoryClockOffsetRange.Min}"
                 Maximum="{Binding MemoryClockOffsetRange.Max}"
                 IsSnapToTickEnabled="True"

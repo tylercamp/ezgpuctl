@@ -7,8 +7,7 @@
         xmlns:controls="clr-namespace:GPUControl.Controls"
         mc:Ignorable="d"
         Title="Edit Profile"
-        d:DataContext="{d:DesignInstance Type=vm:GpuOverclockProfileViewModel, IsDesignTimeCreatable=True}"
-        d:DesignHeight="450" d:DesignWidth="800" d:Background="White" ResizeMode="NoResize" WindowStartupLocation="CenterOwner">
+        d:DataContext="{d:DesignInstance Type=vm:GpuOverclockProfileViewModel, IsDesignTimeCreatable=True}" d:Background="White" ResizeMode="NoResize" WindowStartupLocation="CenterOwner" Height="402" Width="596">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -31,9 +30,8 @@
             </ItemsControl>
         </ScrollViewer>
         <StackPanel Grid.Row="2" Margin="0,0,20,0" Orientation="Horizontal" FlowDirection="RightToLeft">
-            <Button Margin="5,5,5,5" Padding="5,2,5,2" Click="SaveButton_Click">Save</Button>
             <Button Margin="5,5,5,5" Padding="5,2,5,2" Click="CancelButton_Click">Cancel</Button>
-            <Button Margin="20,5,5,5" Padding="5,2,5,2" Click="RevertButton_Click">Revert Changes</Button>
+            <Button Margin="5,5,5,5" Padding="5,2,5,2" Click="SaveButton_Click">Save</Button>
         </StackPanel>
     </Grid>
 </Window>

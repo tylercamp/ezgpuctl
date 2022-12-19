@@ -15,31 +15,98 @@ using GPUControl.ViewModels;
 using GPUControl.Model;
 using System.Windows.Controls.Ribbon;
 using System.Collections.Specialized;
+using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace GPUControl.Controls
 {
-    public class OcPolicyEditorWindowViewModel : ViewModel
+    public partial class OcPolicyEditorWindowViewModel : ObservableObject
     {
         // for XAML designer
-        public OcPolicyEditorWindowViewModel()
+        public OcPolicyEditorWindowViewModel() : this(null)
         {
-            Policy = new GpuOverclockPolicyViewModel();
-            AvailableProgramNames = new List<string>();
         }
 
-        public OcPolicyEditorWindowViewModel(GpuOverclockPolicyViewModel policyViewModel)
+        public OcPolicyEditorWindowViewModel(GpuOverclockPolicyViewModel? policyViewModel)
         {
-            Policy = policyViewModel;
-            Policy.PendingProfiles.CollectionChanged += OnPolicyProfilesChanged;
-            Policy.PendingRules.CollectionChanged += OnPolicyRulesChanged;
-            AvailableProgramNames = ProcessMonitor.ProgramNames!;
+            if (policyViewModel != null)
+            {
+                Policy = policyViewModel ?? new GpuOverclockPolicyViewModel();
+                Policy.Profiles.CollectionChanged += OnPolicyProfilesChanged;
+                Policy.Rules.CollectionChanged += OnPolicyRulesChanged;
+                AvailableProgramNames = ProcessMonitor.ProgramNames!;
+            }
+            else
+            {
+                Policy = new GpuOverclockPolicyViewModel();
+                AvailableProgramNames = new List<string>();
+            }
+
+            void MoveProfileRelative(int pos)
+            {
+                var profile = SelectedProfile!;
+                var profileIdx = Policy.Profiles.IndexOf(profile);
+
+                Policy.Profiles.Move(profileIdx, profileIdx + pos);
+                SelectedProfile = profile;
+            }
+
+            void MoveProfileAbsolute(int pos)
+            {
+                var profile = SelectedProfile!;
+                var profileIdx = Policy.Profiles.IndexOf(profile);
+
+                Policy.Profiles.Move(profileIdx, pos);
+                SelectedProfile = profile;
+            }
+
+            MoveProfileUp = new RelayCommand(
+                () => MoveProfileRelative(-1),
+                () => !Policy.IsReadOnly && SelectedProfile != null && Policy.Profiles.IndexOf(SelectedProfile) > 0
+            );
+
+            MoveProfileDown = new RelayCommand(
+                () => MoveProfileRelative(1),
+                () => !Policy.IsReadOnly && SelectedProfile != null && Policy.Profiles.IndexOf(SelectedProfile) < Policy.Profiles.Count - 1
+            );
+
+            MoveProfileTop = new RelayCommand(
+                () => MoveProfileAbsolute(0),
+                () => !Policy.IsReadOnly && SelectedProfile != null && Policy.Profiles.IndexOf(SelectedProfile) != 0
+            );
+
+            MoveProfileBottom = new RelayCommand(
+                () => MoveProfileAbsolute(Policy.Profiles.Count - 1),
+                () => !Policy.IsReadOnly && SelectedProfile != null && Policy.Profiles.IndexOf(SelectedProfile) != Policy.Profiles.Count - 1
+            );
+
+            RemoveProfile = new RelayCommand(
+                () => { Policy.Profiles.Remove(SelectedProfile!); SelectedProfile = null; },
+                () => SelectedProfile != null
+            );
+
+            RemoveRule = new RelayCommand(
+                () => { Policy.Rules.Remove(SelectedRule!); SelectedRule = null; },
+                () => SelectedRule != null
+            );
         }
+
+        public IRelayCommand MoveProfileUp { get; }
+        public IRelayCommand MoveProfileDown { get; }
+        public IRelayCommand MoveProfileTop { get; }
+        public IRelayCommand MoveProfileBottom { get; }
+        public IRelayCommand RemoveProfile { get; }
+        public IRelayCommand RemoveRule { get; }
+        
 
         private void OnPolicyProfilesChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
-            OnPropertyChanged(nameof(CanAddProfile));
+            MoveProfileUp.NotifyCanExecuteChanged();
+            MoveProfileDown.NotifyCanExecuteChanged();
+            MoveProfileTop.NotifyCanExecuteChanged();
+            MoveProfileBottom.NotifyCanExecuteChanged();
 
-            if (Policy.PendingProfiles.Count == 0)
+            if (Policy.Profiles.Count == 0)
             {
                 SelectedProfile = null;
             }
@@ -47,7 +114,7 @@ namespace GPUControl.Controls
 
         private void OnPolicyRulesChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
-            if (Policy.PendingRules.Count == 0)
+            if (Policy.Rules.Count == 0)
             {
                 SelectedRule = null;
             }
@@ -55,64 +122,27 @@ namespace GPUControl.Controls
 
         public void Dispose()
         {
-            Policy.PendingProfiles.CollectionChanged -= OnPolicyProfilesChanged;
-            Policy.PendingRules.CollectionChanged -= OnPolicyRulesChanged;
+            Policy.Profiles.CollectionChanged -= OnPolicyProfilesChanged;
+            Policy.Rules.CollectionChanged -= OnPolicyRulesChanged;
         }
-
-        public GpuOverclockPolicyViewModel Policy { get; }
 
         public bool CanAddProfile => Policy.AvailableProfiles.Count > 0;
 
-        public void NotifyForProfilesChanged()
-        {
-            OnPropertyChanged(nameof(HasSelectedEditableProfile));
-            OnPropertyChanged(nameof(CanRemoveProfile));
-            OnPropertyChanged(nameof(CanMoveUp));
-            OnPropertyChanged(nameof(CanMoveDown));
-            OnPropertyChanged(nameof(CanMoveToTop));
-            OnPropertyChanged(nameof(CanMoveToBottom));
-        }
+        public GpuOverclockPolicyViewModel Policy { get; }
 
-        private GpuOverclockProfileViewModel? _selectedProfile = null;
-        public GpuOverclockProfileViewModel? SelectedProfile
-        {
-            get => _selectedProfile;
-            set
-            {
-                if (_selectedProfile != value)
-                {
-                    _selectedProfile = value;
-                    OnPropertyChanged();
-                    NotifyForProfilesChanged();
-                }
-            }
-        }
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(MoveProfileUp))]
+        [NotifyCanExecuteChangedFor(nameof(MoveProfileDown))]
+        [NotifyCanExecuteChangedFor(nameof(MoveProfileTop))]
+        [NotifyCanExecuteChangedFor(nameof(MoveProfileBottom))]
+        [NotifyCanExecuteChangedFor(nameof(RemoveProfile))]
+        private GpuOverclockProfileViewModel? selectedProfile = null;
 
-        private ProgramPolicyRuleViewModel? _selectedRule = null;
-        public ProgramPolicyRuleViewModel? SelectedRule
-        {
-            get => _selectedRule;
-            set
-            {
-                _selectedRule = value;
-                OnPropertyChanged();
-                OnPropertyChanged(nameof(HasSelectedRule));
-            }
-        }
-
-        public bool HasSelectedEditableProfile => !Policy.IsReadOnly && SelectedProfile != null && !SelectedProfile.IsReadOnly;
-
-        public bool HasSelectedRule => _selectedRule != null;
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(RemoveRule))]
+        private ProgramPolicyRuleViewModel? selectedRule = null;
 
         public List<string> AvailableProgramNames { get; set; }
-
-        public bool CanRemoveProfile => SelectedProfile != null && !Policy.IsReadOnly;
-        public bool CanMoveUp => SelectedProfile != null && Policy.Profiles.IndexOf(SelectedProfile) > 0;
-        public bool CanMoveDown => SelectedProfile != null && Policy.Profiles.IndexOf(SelectedProfile) < Policy.Profiles.Count - 1;
-        public bool CanMoveToTop => SelectedProfile != null && Policy.Profiles.IndexOf(SelectedProfile) != 0;
-        public bool CanMoveToBottom => SelectedProfile != null && Policy.Profiles.IndexOf(SelectedProfile) != Policy.Profiles.Count - 1;
-
-        public bool CanAddRule => !Policy.IsReadOnly;
     }
 
     /// <summary>
@@ -123,6 +153,13 @@ namespace GPUControl.Controls
         public OcPolicyEditorWindow()
         {
             InitializeComponent();
+            OriginalName = "";
+        }
+
+        public OcPolicyEditorWindow(string originalPolicyName)
+        {
+            OriginalName = originalPolicyName;
+            InitializeComponent();
         }
 
         public OcPolicyEditorWindowViewModel ViewModel
@@ -130,6 +167,10 @@ namespace GPUControl.Controls
             get => (DataContext as OcPolicyEditorWindowViewModel)!;
             set => DataContext = value;
         }
+
+        public string OriginalName { get; }
+
+        public event Func<string, bool>? NewNameSelected;
 
         protected override void OnClosed(EventArgs e)
         {
@@ -141,13 +182,7 @@ namespace GPUControl.Controls
             var newProgramRule = new ProgramPolicyRule { Negated = false, ProgramName = "" };
             var newProgramRuleVm = new ProgramPolicyRuleViewModel(newProgramRule);
 
-            ViewModel.Policy.PendingRules.Add(newProgramRuleVm);
-        }
-
-        private void RemoveProgramButton_Click(object sender, RoutedEventArgs e)
-        {
-            ViewModel.Policy.PendingRules.Remove(ViewModel.SelectedRule!);
-            ViewModel.SelectedRule = null;
+            ViewModel.Policy.Rules.Add(newProgramRuleVm);
         }
 
         private void AddProfileButton_Click(object sender, RoutedEventArgs e)
@@ -163,53 +198,17 @@ namespace GPUControl.Controls
         private void ProfileMenuItem_Click(object sender, RoutedEventArgs e)
         {
             var profileVm = ((sender as MenuItem)!.DataContext as GpuOverclockProfileViewModel)!;
-            ViewModel.Policy.PendingProfiles.Add(profileVm);
-            ViewModel.NotifyForProfilesChanged();
-        }
-
-        private void RemoveProfileButton_Click(object sender, RoutedEventArgs e)
-        {
-            ViewModel.Policy.PendingProfiles.Remove(ViewModel.SelectedProfile!);
-            ViewModel.SelectedProfile = null;        }
-
-        private void MoveProfileUpButton_Click(object sender, RoutedEventArgs e)
-        {
-            var profile = ViewModel.SelectedProfile!;
-            var profileIdx = ViewModel.Policy.PendingProfiles.IndexOf(profile);
-            
-            ViewModel.Policy.PendingProfiles.Move(profileIdx, profileIdx - 1);
-            ViewModel.SelectedProfile = profile;
-        }
-
-        private void MoveProfileDownButton_Click(object sender, RoutedEventArgs e)
-        {
-            var profile = ViewModel.SelectedProfile!;
-            var profileIdx = ViewModel.Policy.PendingProfiles.IndexOf(profile);
-
-            ViewModel.Policy.PendingProfiles.Move(profileIdx, profileIdx + 1);
-            ViewModel.SelectedProfile = profile;
-        }
-
-        private void MoveProfileTopButton_Click(object sender, RoutedEventArgs e)
-        {
-            var profile = ViewModel.SelectedProfile!;
-            var profileIdx = ViewModel.Policy.PendingProfiles.IndexOf(profile);
-
-            ViewModel.Policy.PendingProfiles.Move(profileIdx, 0);
-            ViewModel.SelectedProfile = profile;
-        }
-
-        private void MoveProfileBottomButton_Click(object sender, RoutedEventArgs e)
-        {
-            var profile = ViewModel.SelectedProfile!;
-            var profileIdx = ViewModel.Policy.PendingProfiles.IndexOf(profile);
-            
-            ViewModel.Policy.PendingProfiles.Move(profileIdx, ViewModel.Policy.Profiles.Count - 1);
-            ViewModel.SelectedProfile = profile;
+            ViewModel.Policy.Profiles.Add(profileVm);
         }
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
+            if (ViewModel.Policy.Name != OriginalName && NewNameSelected?.Invoke(ViewModel.Policy.Name) != true)
+            {
+                MessageBox.Show($"The name \"{ViewModel.Policy.Name}\" is already in use by another policy.");
+                return;
+            }
+
             DialogResult = true;
             this.Close();
         }

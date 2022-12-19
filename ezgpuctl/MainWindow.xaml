@@ -20,36 +20,60 @@
             </Grid.ColumnDefinitions>
             <Grid Grid.Column="0">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="34*"/>
-                    <RowDefinition Height="243*"/>
+                    <RowDefinition Height="40"/>
+                    <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
+
                 <Label Grid.Row="0" Content="Policies" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Center"/>
-                <Button Grid.Row="0" Content="Add" Margin="0,10,10,0" VerticalAlignment="Top" HorizontalAlignment="Right" Width="40" Click="AddPolicyButton_Click"/>
-                <ListBox Grid.Row="1" ItemsSource="{Binding Policies}" SelectedItem="{Binding SelectedPolicy, Mode=TwoWay}">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <Label Content="{Binding Name}" />
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
-                <Button Content="Remove" HorizontalAlignment="Left" Margin="299,10,0,0" VerticalAlignment="Top" Click="RemovePolicyButton_Click"/>
-                <Button Content="Edit" HorizontalAlignment="Left" Margin="247,0,0,0" VerticalAlignment="Center" Click="EditPolicyButton_Click"/>
+
+                <Button Grid.Row="0" Content="Add" Margin="350,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" Width="40" Click="AddPolicyButton_Click"/>
+                <Button Grid.Row="0" Content="Remove" IsEnabled="{Binding CanRemovePolicy}" Margin="270,0,0,0" VerticalAlignment="Center" Click="RemovePolicyButton_Click" HorizontalAlignment="Left" Width="46"/>
+                <Button Grid.Row="0" Content="Edit" IsEnabled="{Binding CanEditPolicy}" Margin="321,0,0,0" VerticalAlignment="Center" Click="EditPolicyButton_Click" HorizontalAlignment="Left" Width="24"/>
+
+                <Grid Grid.Row="1" Margin="0,0,10,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="110"/>
+                        <ColumnDefinition Width="299*"/>
+                    </Grid.ColumnDefinitions>
+                    <ListBox Grid.Column="1" ItemsSource="{Binding Policies}" SelectedItem="{Binding SelectedPolicy, Mode=TwoWay}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Label Content="{Binding Name}" FontWeight="{Binding DisplayFontWeight}" FontStyle="{Binding DisplayFontStyle}" />
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <Button Content="Move Up" Command="{Binding MovePolicyUp}" Margin="5,10,5,0" VerticalAlignment="Top"/>
+                    <Button Content="Move Down" Command="{Binding MovePolicyDown}" Margin="5,35,5,0" VerticalAlignment="Top"/>
+                    <Button Content="Move to Top" Command="{Binding MovePolicyTop}" Margin="5,60,5,0" VerticalAlignment="Top"/>
+                    <Button Content="Move to Bottom" Command="{Binding MovePolicyBottom}" Margin="5,85,5,0" VerticalAlignment="Top"/>
+                </Grid>
             </Grid>
             <Grid Grid.Column="1">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="38*"/>
-                    <RowDefinition Height="239*"/>
+                    <RowDefinition Height="40"/>
+                    <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
                 <Label Grid.Row="0" Content="Profiles" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Center" Height="26" Width="49"/>
-                <Button Grid.Row="0" Content="Add" HorizontalAlignment="Left" Margin="350,9,0,0" VerticalAlignment="Top" Height="17" Width="40" Click="AddProfileButton_Click"/>
+                <Button Content="Add" Margin="350,0,0,0" VerticalAlignment="Center" Height="20" Click="AddProfileButton_Click" HorizontalAlignment="Left" Width="40"/>
                 <ListView Grid.Row="1" ItemsSource="{Binding Profiles}" SelectedItem="{Binding SelectedProfile, Mode=TwoWay}">
                     <ListView.ItemTemplate>
                         <DataTemplate>
-                            <Label Content="{Binding Label}" />
+                            <Label Content="{Binding Label}">
+                                <Label.Style>
+                                    <Style TargetType="Label">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsReadOnly}" Value="True">
+                                                <Setter Property="FontStyle" Value="Italic" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Label.Style>
+                            </Label>
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
-                <Button Content="Remove" HorizontalAlignment="Left" Margin="287,0,0,0" VerticalAlignment="Center" Click="RemoveProfileButton_Click"/>
+                <Button Content="Remove" IsEnabled="{Binding CanRemoveProfile}" Margin="270,0,0,0" VerticalAlignment="Center" Click="RemoveProfileButton_Click" HorizontalAlignment="Left" Width="46"/>
+                <Button Content="Edit" IsEnabled="{Binding CanEditProfile}" Margin="321,0,0,0" VerticalAlignment="Center" Click="EditProfileButton_Click" HorizontalAlignment="Left" Width="24"/>
             </Grid>
         </Grid>
         <Grid Grid.Row="1">
