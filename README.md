@@ -16,12 +16,18 @@ The impl. details for NVIDIA are handled by [NvAPIWrapper](https://github.com/fa
 TODOs:
 
 - ~Basic enumeration of GPUs + realtime display~
-- Overclocking profile config page
-- Ability to apply per-GPU overclocking profiles
-- Ability to configure overclocking profile for more than 1 GPU
-- Ability to apply multi-GPU overclocking profiles
-- Ability to set an OC profile depending on running processes
-- Ability to compose OC profiles depending on use of multiple processes
+- ~Overclocking profile config page~
+- ~Ability to apply per-GPU overclocking profiles~
+- ~Ability to configure overclocking profile for more than 1 GPU~
+- ~Ability to apply multi-GPU overclocking profiles~
+- ~Ability to set an OC profile depending on running processes~
+- ~Ability to compose OC profiles depending on use of multiple processes~
+- Add copy of LGPL license to release files for NvAPIWrapper
+- Toggle to run on startup
+- Buttons for controlling policy service
+- System tray entry for starting/stopping the policy service
+- General UI improvements
+- GPU impl. abstraction
 - Fan control
 
 ## Limitations
