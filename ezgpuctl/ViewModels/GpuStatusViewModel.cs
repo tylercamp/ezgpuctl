@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using GPUControl.gpu;
 using NvAPIWrapper.GPU;
 using System;
 using System.Collections.Generic;
@@ -10,16 +11,15 @@ namespace GPUControl.ViewModels
 {
     public class GpuStatusViewModel : ObservableObject
     {
-        private GpuWrapper? gpu;
+        private IGpuWrapper? gpu;
         
         public GpuStatusViewModel() : this(null)
         {
         }
 
-        public GpuStatusViewModel(PhysicalGPU? gpu)
+        public GpuStatusViewModel(IGpuWrapper? gpu)
         {
-            if (gpu != null) this.gpu = new GpuWrapper(gpu);
-            else this.gpu = null;
+            this.gpu = gpu;
 
             GpuName = this.gpu?.Label ?? "GPU Name";
             UpdateState();
@@ -37,7 +37,7 @@ namespace GPUControl.ViewModels
                     MemoryBaseClock = gpu.Clocks.BaseMemoryClockMhz,
                     PowerTarget = gpu.Power.CurrentTargetPower,
                     CurrentPower = gpu.Power.CurrentPower,
-                    TempTarget = gpu.Temps.TempTarget,
+                    TempTarget = gpu.Temps.CurrentTargetTemp,
                     CurrentTemp = gpu.Temps.CurrentCoreTemp
                 };
 

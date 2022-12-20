@@ -2,7 +2,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>net60</TargetFrameworks>
-    <Version>0.8.1.107</Version>
+    <Version>0.8.1.109</Version>
     <Company>falahati.net</Company>
     <Description>NvAPIWrapper is a .Net wrapper for NVIDIA public API</Description>
     <Authors>Soroush Falahati</Authors>

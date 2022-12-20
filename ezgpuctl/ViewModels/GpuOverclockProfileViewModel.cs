@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using GPUControl.gpu;
 using GPUControl.Model;
 using NvAPIWrapper.GPU;
 using System;
@@ -31,7 +32,7 @@ namespace GPUControl.ViewModels
             IsReadOnly = true;
         }
 
-        public GpuOverclockProfileViewModel(List<PhysicalGPU> gpus, GpuOverclockProfile profile)
+        public GpuOverclockProfileViewModel(List<IGpuWrapper> gpus, GpuOverclockProfile profile)
         {
             name = profile.Name;
 
@@ -42,22 +43,21 @@ namespace GPUControl.ViewModels
                 // removed
                 gpus.Select(gpu =>
                 {
-                    var wrapper = new GpuWrapper(gpu);
-                    var existingOc = profile.OverclockSettings.Where(s => s.GpuId == gpu.GPUId).FirstOrDefault();
+                    var existingOc = profile.OverclockSettings.Where(s => s.GpuId == gpu.GpuId).FirstOrDefault();
                     if (existingOc != null)
                     {
-                        return new GpuOverclockViewModel(wrapper, existingOc);
+                        return new GpuOverclockViewModel(gpu, existingOc);
                     }
                     else
                     {
-                        var newOc = new GpuOverclock { GpuId = gpu.GPUId };
-                        return new GpuOverclockViewModel(wrapper, newOc);
+                        var newOc = new GpuOverclock { GpuId = gpu.GpuId };
+                        return new GpuOverclockViewModel(gpu, newOc);
                     }
                 }).ToList()
             );
         }
 
-        public static GpuOverclockProfileViewModel GetDefault(List<PhysicalGPU> gpus)
+        public static GpuOverclockProfileViewModel GetDefault(List<IGpuWrapper> gpus)
         {
             var overclockVms = gpus.Select(gpu => GpuOverclockViewModel.GetDefault(gpu)).ToList();
 

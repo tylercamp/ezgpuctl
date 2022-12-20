@@ -5,13 +5,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GPUControl.gpuwrapper
+namespace GPUControl.gpu.nvidiaimpl
 {
-    public class PowerInfo
+    public class NvidiaPowerInfo : IPowerInfo
     {
         PhysicalGPU gpu;
 
-        public PowerInfo(PhysicalGPU gpu)
+        public NvidiaPowerInfo(PhysicalGPU gpu)
         {
             this.gpu = gpu;
         }

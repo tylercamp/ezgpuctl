@@ -23,6 +23,7 @@ TODOs:
 - ~Ability to set an OC profile depending on running processes~
 - ~Ability to compose OC profiles depending on use of multiple processes~
 - Add copy of LGPL license to release files for NvAPIWrapper
+- Add more details to GPU status view for identifying multiple GPUs
 - Toggle to run on startup
 - Buttons for controlling policy service
 - System tray entry for starting/stopping the policy service

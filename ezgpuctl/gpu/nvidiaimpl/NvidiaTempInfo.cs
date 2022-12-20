@@ -5,28 +5,28 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GPUControl.gpuwrapper
+namespace GPUControl.gpu.nvidiaimpl
 {
-    public class TempInfo
+    public class NvidiaTempInfo : ITempInfo
     {
         PhysicalGPU gpu;
 
-        public TempInfo(PhysicalGPU gpu)
+        public NvidiaTempInfo(PhysicalGPU gpu)
         {
             this.gpu = gpu;
         }
 
-        public decimal CurrentCoreTemp => (decimal)gpu
+        public decimal CurrentCoreTemp => gpu
             .ThermalInformation.ThermalSensors
             .Where(s => s.Target == NvAPIWrapper.Native.GPU.ThermalSettingsTarget.GPU)
             .First().CurrentTemperature;
 
-        public decimal TempTarget => (decimal)gpu
+        public decimal CurrentTargetTemp => gpu
             .PerformanceControl.ThermalLimitPolicies
             .Where(p => p.Controller == NvAPIWrapper.Native.GPU.ThermalController.GPU)
             .First().TargetTemperature;
 
-        public ValueRange TempTargetRange
+        public ValueRange TargetTempRange
         {
             get
             {

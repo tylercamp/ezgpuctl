@@ -1,4 +1,5 @@
-﻿using GPUControl.Model;
+﻿using GPUControl.gpu;
+using GPUControl.Model;
 using GPUControl.ViewModels;
 using NvAPIWrapper.GPU;
 using System;
@@ -24,7 +25,7 @@ namespace GPUControl
 
         public static event Action<List<string>> PoliciesApplied;
 
-        public static void Start(Settings settingsSource, GpuOverclockPolicy defaultPolicy, GpuOverclockProfile defaultProfile, List<PhysicalGPU> gpus)
+        public static void Start(Settings settingsSource, GpuOverclockPolicy defaultPolicy, GpuOverclockProfile defaultProfile, List<IGpuWrapper> gpus)
         {
             if (currentContext != null) return;
 
@@ -36,7 +37,7 @@ namespace GPUControl
                 var token = currentContext.TokenSource.Token;
                 while (!token.IsCancellationRequested)
                 {
-                    var finalOc = gpus.Select(gpu => new GpuOverclock() { GpuId = gpu.GPUId }).ToList();
+                    var finalOc = gpus.Select(gpu => new GpuOverclock() { GpuId = gpu.GpuId }).ToList();
 
                     var currentSettings = settingsSource.Clone();
                     currentSettings.Policies.Add(defaultPolicy);
@@ -66,7 +67,7 @@ namespace GPUControl
                     logger.Debug("Created final OCs: {0}", finalOc);
                     foreach (var oc in finalOc)
                     {
-                        var wrapper = new GpuWrapper(gpus.Single(gpu => gpu.GPUId == oc.GpuId));
+                        var wrapper = gpus.Single(gpu => gpu.GpuId == oc.GpuId);
                         wrapper.ApplyOC(oc);
                     }
 

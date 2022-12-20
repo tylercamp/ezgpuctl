@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using GPUControl.gpu;
 using GPUControl.Model;
 using NvAPIWrapper.GPU;
 using NvAPIWrapper.Native.GPU;
@@ -27,7 +28,7 @@ namespace GPUControl.ViewModels
             GpuId = 0;
         }
 
-        public GpuOverclockViewModel(GpuWrapper gpu, GpuOverclock overclock)
+        public GpuOverclockViewModel(IGpuWrapper gpu, GpuOverclock overclock)
         {
             this.IsReadOnly = false;
 
@@ -43,22 +44,22 @@ namespace GPUControl.ViewModels
             MemoryClockOffsetRange = gpu.Clocks.MemoryClockOffsetRangeMhz;
         }
 
-        private GpuOverclockViewModel(GpuWrapper gpu, GpuOverclock overclock, bool isReadOnly) : this(gpu, overclock)
+        private GpuOverclockViewModel(IGpuWrapper gpu, GpuOverclock overclock, bool isReadOnly) : this(gpu, overclock)
         {
             this.IsReadOnly = isReadOnly;
         }
 
-        public static GpuOverclockViewModel GetDefault(PhysicalGPU gpu)
+        public static GpuOverclockViewModel GetDefault(IGpuWrapper gpu)
         {
             var defaultOverclock = new Model.GpuOverclock()
             {
-                GpuId = gpu.GPUId,
+                GpuId = gpu.GpuId,
                 CoreClockOffset = 0,
                 MemoryClockOffset = 0,
                 PowerTarget = 100
             };
 
-            return new GpuOverclockViewModel(new GpuWrapper(gpu), defaultOverclock, true);
+            return new GpuOverclockViewModel(gpu, defaultOverclock, true);
         }
 
         public string GpuLabel { get; }

@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GPUControl.Controls;
+using GPUControl.gpu;
 using GPUControl.Model;
 using GPUControl.ViewModels;
 using NvAPIWrapper;
@@ -35,7 +36,7 @@ namespace GPUControl
             selectedGpu = GpuStatuses[0];
         }
 
-        public MainWindowViewModel(List<PhysicalGPU> gpus, Settings settings)
+        public MainWindowViewModel(List<IGpuWrapper> gpus, Settings settings)
         {
             Settings = new SettingsViewModel(gpus, settings);
             GpuStatuses = gpus.Select(gpu => new GpuStatusViewModel(gpu)).ToList();
@@ -154,7 +155,7 @@ namespace GPUControl
     /// </summary>
     public partial class MainWindow : Window
     {
-        private List<PhysicalGPU> _gpus;
+        private List<IGpuWrapper> _gpus;
         private Settings _settings;
 
         public MainWindow()
@@ -162,9 +163,10 @@ namespace GPUControl
             ProcessMonitor.Start();
 
             NVIDIA.Initialize();
-            _settings = Settings.LoadFrom("settings.json");
+            if (IGpuWrapper.UseMockGpus) _settings = Settings.LoadFrom("settings-mock.json");
+            else _settings = Settings.LoadFrom("settings.json");
 
-            this._gpus = PhysicalGPU.GetPhysicalGPUs().ToList();
+            this._gpus = IGpuWrapper.ListAll();
             ViewModel = new MainWindowViewModel(_gpus, _settings);
 
             InitializeComponent();

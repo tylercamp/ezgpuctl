@@ -8,33 +8,33 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GPUControl
+namespace GPUControl.gpu.nvidiaimpl
 {
     /// <summary>
     /// Provides utilities for user-facing actions
     /// </summary>
-    public class GpuWrapper
+    public class NvidiaGpuWrapper : IGpuWrapper
     {
         PhysicalGPU gpu;
 
-        public GpuWrapper(PhysicalGPU gpu)
+        public NvidiaGpuWrapper(PhysicalGPU gpu)
         {
             this.gpu = gpu;
 
-            Clocks = new gpuwrapper.ClockInfo(gpu);
-            Power = new gpuwrapper.PowerInfo(gpu);
-            Temps = new gpuwrapper.TempInfo(gpu);
+            Clocks = new NvidiaClockInfo(gpu);
+            Power = new NvidiaPowerInfo(gpu);
+            Temps = new NvidiaTempInfo(gpu);
         }
 
-        public uint GpuId => gpu.GPUId;
+        public override uint GpuId => gpu.GPUId;
 
-        public gpuwrapper.ClockInfo Clocks { get; }
-        public gpuwrapper.PowerInfo Power { get; }
-        public gpuwrapper.TempInfo Temps { get; }
+        public override IClockInfo Clocks { get; }
+        public override IPowerInfo Power { get; }
+        public override ITempInfo Temps { get; }
 
-        public string Label => $"{gpu.FullName} #{GpuId}";
+        public override string Label => $"{gpu.FullName} #{GpuId}";
 
-        public void ApplyOC(Model.GpuOverclock oc)
+        public override void ApplyOC(Model.GpuOverclock oc)
         {
             #region Power target
             var updatedPolicyEntries = GPUApi.ClientPowerPoliciesGetStatus(gpu.Handle).PowerPolicyStatusEntries.Select(e =>
@@ -75,6 +75,11 @@ namespace GPUControl
 
             //GPUApi.SetCoreVoltageBoostPercent(vm._gpu.Handle, new PrivateVoltageBoostPercentV1);
             #endregion
+        }
+
+        public static List<NvidiaGpuWrapper> GetAll()
+        {
+            return PhysicalGPU.GetPhysicalGPUs().Select(gpu => new NvidiaGpuWrapper(gpu)).ToList();
         }
     }
 }

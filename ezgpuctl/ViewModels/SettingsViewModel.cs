@@ -1,4 +1,5 @@
-﻿using GPUControl.Model;
+﻿using GPUControl.gpu;
+using GPUControl.Model;
 using NvAPIWrapper.GPU;
 using System;
 using System.Collections.Generic;
@@ -15,7 +16,7 @@ namespace GPUControl.ViewModels
     {
         private Settings settings;
 
-        public SettingsViewModel(List<PhysicalGPU> gpus, Settings settings)
+        public SettingsViewModel(List<IGpuWrapper> gpus, Settings settings)
         {
             this.settings = settings;
 

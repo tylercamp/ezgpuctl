@@ -7,13 +7,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GPUControl.gpuwrapper
+namespace GPUControl.gpu.nvidiaimpl
 {
-    public class ClockInfo
+    public class NvidiaClockInfo : IClockInfo
     {
         PhysicalGPU gpu;
 
-        public ClockInfo(PhysicalGPU gpu)
+        public NvidiaClockInfo(PhysicalGPU gpu)
         {
             this.gpu = gpu;
         }
