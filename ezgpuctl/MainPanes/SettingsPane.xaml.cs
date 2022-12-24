@@ -1,4 +1,5 @@
-﻿using GPUControl.Lib.GPU;
+﻿using GPUControl.Controls;
+using GPUControl.Lib.GPU;
 using GPUControl.Model;
 using System;
 using System.Collections.Generic;
@@ -60,6 +61,11 @@ namespace GPUControl.MainPanes
             _settings.Save();
 
             _reloadViewModel();
+        }
+
+        private void AboutButton_Click(object sender, RoutedEventArgs e)
+        {
+            new AboutWindow().ShowDialog();
         }
     }
 }

@@ -8,7 +8,7 @@
              MinWidth="290"
              MinHeight="175"
              d:DataContext="{d:DesignInstance Type=local:MainWindowViewModel, IsDesignTimeCreatable=True}"
-             d:DesignHeight="171.586" d:DesignWidth="283.494" d:Background="White">
+             d:DesignHeight="171.586" d:Background="White" Width="402">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -17,6 +17,7 @@
         <Grid Grid.Row="0" Margin="0,5,0,5">
             <Button Content="Start" Command="{Binding PolicyService.StartOcService}" HorizontalAlignment="Left" Margin="10,0,0,0" Width="60"  VerticalAlignment="Center"/>
             <Button Content="Stop" Command="{Binding PolicyService.StopOcService}" HorizontalAlignment="Left" Margin="75,0,0,0" Width="60" VerticalAlignment="Center"/>
+            <Button Content="About" HorizontalAlignment="Left" Margin="163,0,0,0" Width="60" VerticalAlignment="Center" Click="AboutButton_Click"/>
         </Grid>
 
         <Grid Grid.Row="1">
@@ -49,7 +50,7 @@
             </StackPanel>
         </Grid>
 
-        <Grid Grid.RowSpan="2">
+        <Grid Grid.RowSpan="2" HorizontalAlignment="Right" Width="148" Height="71" VerticalAlignment="Top">
             <CheckBox IsChecked="{Binding RunOnStartup.IsEnabled, Mode=TwoWay}" Content="Run on Startup" Margin="0,7,10,0" HorizontalAlignment="Right" Width="111" Height="15" VerticalAlignment="Top"/>
             <CheckBox Content="Ask Before Close" Margin="0,27,10,0" VerticalAlignment="Top" HorizontalAlignment="Right" Width="111" IsChecked="{Binding AskBeforeClose}" Click="AskBeforeClose_Clicked"/>
         </Grid>
