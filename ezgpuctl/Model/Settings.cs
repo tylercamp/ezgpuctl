@@ -57,49 +57,6 @@ namespace GPUControl.Model
 
         public bool AskBeforeClose { get; set; } = true;
 
-        private Settings Sanitized
-        {
-            get
-            {
-                // remove entries with conflicting names, remove references to profiles and policies which
-                // don't exist with the given name
-
-                var result = new Settings(Path);
-
-                var observedProfileNames = new List<string>();
-                foreach (var profile in Profiles)
-                {
-                    if (observedProfileNames.Contains(profile.Name)) continue;
-
-                    result.Profiles.Add(profile);
-                    observedProfileNames.Add(profile.Name);
-                }
-
-                var observedPolicyNames = new List<string>();
-                foreach (var policy in Policies)
-                {
-                    if (observedPolicyNames.Contains(policy.Name)) continue;
-
-                    policy.OrderedProfileNames = policy.OrderedProfileNames.Where(observedProfileNames.Contains).Distinct().ToList();
-                    result.Policies.Add(policy);
-                    observedPolicyNames.Add(policy.Name);
-                }
-
-                result.OcMode = OcMode;
-                result.PauseOcService = PauseOcService;
-                result.HideOnStartup = HideOnStartup;
-                result.AskBeforeClose = AskBeforeClose;
-
-                if (OcMode_SpecificPolicyName != null && observedPolicyNames.Contains(OcMode_SpecificPolicyName))
-                    result.OcMode_SpecificPolicyName = OcMode_SpecificPolicyName;
-
-                if (OcMode_SpecificProfileName != null && observedProfileNames.Contains(OcMode_SpecificProfileName))
-                    result.OcMode_SpecificProfileName = OcMode_SpecificProfileName;
-
-                return result;
-            }
-        }
-
         public void Save()
         {
             if (Path == null) throw new InvalidOperationException();
@@ -114,7 +71,25 @@ namespace GPUControl.Model
             var result = JsonConvert.DeserializeObject<Settings>(File.ReadAllText(filename)) ?? new Settings(filename);
             result.Path = filename;
 
-            return result.Sanitized;
+            // remove entries with conflicting names, remove references to profiles and policies which
+            // don't exist with the given name
+
+            result.Profiles = result.Profiles.Where(p => p == result.Profiles.Last(l => l.Name == p.Name)).ToList();
+            result.Policies = result.Policies.Where(p => p == result.Policies.Last(l => l.Name == p.Name)).ToList();
+
+            foreach (var p in result.Policies)
+            {
+                // remove duplicates and any profile names which do not exist
+                p.OrderedProfileNames = p.OrderedProfileNames.Where(n => result.Policies.Any(p => p.Name == n)).Distinct().ToList();
+            }
+
+            if (result.OcMode_SpecificPolicyName != null && !result.Policies.Any(p => p.Name == result.OcMode_SpecificPolicyName))
+                result.OcMode_SpecificPolicyName = null;
+
+            if (result.OcMode_SpecificProfileName != null && !result.Profiles.Any(p => p.Name == result.OcMode_SpecificProfileName))
+                result.OcMode_SpecificProfileName = null;
+
+            return result;
         }
     }
 }

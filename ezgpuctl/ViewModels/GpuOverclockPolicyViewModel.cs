@@ -95,7 +95,7 @@ namespace GPUControl.ViewModels
         [ObservableProperty]
         private string name;
 
-        public List<GpuOverclockProfileViewModel> AvailableProfiles => parent?.Profiles?.Where(p => !Profiles.Contains(p))?.ToList() ?? new List<GpuOverclockProfileViewModel>();
+        public List<GpuOverclockProfileViewModel> AvailableProfiles => parent?.Profiles?.Where(p => !p.IsReadOnly && !Profiles.Contains(p))?.ToList() ?? new List<GpuOverclockProfileViewModel>();
 
         [ObservableProperty]
         private ObservableCollection<GpuOverclockProfileViewModel> profiles;
