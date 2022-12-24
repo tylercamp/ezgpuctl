@@ -4,8 +4,9 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:vms="clr-namespace:GPUControl.ViewModels"
+             xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800" d:Background="White"
+             d:DesignHeight="388" d:DesignWidth="353.333" d:Background="White"
              d:DataContext="{d:DesignInstance Type=vms:GpuOverclockViewModel, IsDesignTimeCreatable=True}">
     <Grid>
         <Grid.RowDefinitions>
@@ -13,123 +14,92 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <Label Grid.Row="0" Content="{Binding GpuLabel}" FontSize="20" />
-        <Grid Grid.Row="1">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="51"/>
-                <RowDefinition Height="59"/>
-                <RowDefinition Height="57"/>
-                <RowDefinition/>
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="131"/>
-                <ColumnDefinition/>
-                <ColumnDefinition Width="100"/>
-            </Grid.ColumnDefinitions>
 
-            <!-- Power target -->
+        <StackPanel Grid.Row="1">
+            <Expander IsExpanded="True">
+                <Expander.Header>
+                    <!-- https://stackoverflow.com/questions/31161591/wpf-expander-header-horizontal-stretch -->
+                    <Grid HorizontalAlignment="{Binding HorizontalAlignment, RelativeSource={RelativeSource AncestorType=ContentPresenter}, Mode=OneWayToSource}">
+                        <Label Content="Power" HorizontalAlignment="Left" />
+                        <xctk:WatermarkTextBox Watermark="(Not Set)" Margin="0,0,10,0" HorizontalAlignment="Right" Width="80" Text="{Binding PowerTargetDisplayString, Mode=TwoWay}" />
+                    </Grid>
+                </Expander.Header>
 
-            <CheckBox
-                Grid.Row="0"
-                Grid.Column="0"
-                Content="Power"
-                IsEnabled="{Binding IsWriteAllowed}"
-                IsChecked="{Binding UsesPowerTarget}"
-                HorizontalAlignment="Center"
-                Margin="0,7,0,0"
-                VerticalAlignment="Top"
-                Width="110" Height="16"
-                />
-            
-            <TextBlock
-                Grid.Row="0" Grid.Column="0"
-                HorizontalAlignment="Center"
-                Margin="0,28,0,0"
-                TextWrapping="Wrap"
-                Text="{Binding PowerTarget}"
-                VerticalAlignment="Top"
-                Height="16" Width="80"
-                />
-            
-            <Slider
-                Grid.Row="0" Grid.Column="1"
-                
-                IsEnabled="{Binding CanChangePowerTarget}"
-                IsSnapToTickEnabled="True"
-                Value="{Binding PowerTargetDisplayValue, Mode=TwoWay}"
-                Minimum="{Binding PowerTargetRange.Min}" Maximum="{Binding PowerTargetRange.Max}"
-                
-                Margin="10,0,10,0"
-                VerticalAlignment="Center"
-                Height="18"
-                />
+                <Grid Margin="5,5,5,5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="{Binding PowerTargetRange.Min}" Grid.Column="0" HorizontalAlignment="Right" />
+                    <Slider
+                        Grid.Column="1"
+                        IsSnapToTickEnabled="True"
+                        Value="{Binding PowerTargetDisplayValue, Mode=TwoWay}"
+                        Minimum="{Binding PowerTargetRange.Min}" Maximum="{Binding PowerTargetRange.Max}"
+                        Margin="10,0,10,0"
+                        VerticalAlignment="Center"
+                        Height="18"
+                        />
+                    <TextBlock Text="{Binding PowerTargetRange.Max}" Grid.Column="2" HorizontalAlignment="Left" />
+                </Grid>
+            </Expander>
+            <Expander IsExpanded="True">
+                <Expander.Header>
+                    <!-- https://stackoverflow.com/questions/31161591/wpf-expander-header-horizontal-stretch -->
+                    <Grid HorizontalAlignment="{Binding HorizontalAlignment, RelativeSource={RelativeSource AncestorType=ContentPresenter}, Mode=OneWayToSource}">
+                        <Label Content="Core Offset" HorizontalAlignment="Left" />
+                        <xctk:WatermarkTextBox Watermark="(Not Set)" Margin="0,0,10,0" HorizontalAlignment="Right" Width="80" Text="{Binding CoreClockOffsetDisplayString, Mode=TwoWay}" />
+                    </Grid>
+                </Expander.Header>
 
+                <Grid Margin="5,5,5,5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="{Binding CoreClockOffsetRange.Min}" Grid.Column="0" HorizontalAlignment="Right" />
+                    <Slider
+                        Grid.Column="1"
+                        IsSnapToTickEnabled="True"
+                        Value="{Binding CoreClockOffsetDisplayValue, Mode=TwoWay}"
+                        Minimum="{Binding CoreClockOffsetRange.Min}" Maximum="{Binding CoreClockOffsetRange.Max}"
+                        Margin="10,0,10,0"
+                        VerticalAlignment="Center"
+                        Height="18"
+                        />
+                    <TextBlock Text="{Binding CoreClockOffsetRange.Max}" Grid.Column="2" HorizontalAlignment="Left" />
+                </Grid>
+            </Expander>
+            <Expander IsExpanded="True">
+                <Expander.Header>
+                    <!-- https://stackoverflow.com/questions/31161591/wpf-expander-header-horizontal-stretch -->
+                    <Grid HorizontalAlignment="{Binding HorizontalAlignment, RelativeSource={RelativeSource AncestorType=ContentPresenter}, Mode=OneWayToSource}">
+                        <Label Content="Memory Offset" HorizontalAlignment="Left" />
+                        <xctk:WatermarkTextBox Watermark="(Not Set)" Margin="0,0,10,0" HorizontalAlignment="Right" Width="80" Text="{Binding MemoryClockOffsetDisplayString, Mode=TwoWay}" />
+                    </Grid>
+                </Expander.Header>
 
-            <!-- Core clock -->
-            <CheckBox
-                Grid.Row="1" Grid.Column="0"
-                IsEnabled="{Binding IsWriteAllowed}"
-                IsChecked="{Binding UsesCoreClockOffset}"
-                HorizontalAlignment="Center"
-                Margin="0,7,0,0"
-                Content="Core Offset"
-                VerticalAlignment="Top"
-                Width="110" Height="16"
-                />
-
-            <TextBlock
-                Grid.Row="1" Grid.Column="0"
-                HorizontalAlignment="Center"
-                Margin="0,28,0,0"
-                TextWrapping="Wrap"
-                Text="{Binding CoreClockOffset}"
-                VerticalAlignment="Top"
-                Height="16" Width="80"
-                />
-
-            <Slider
-                Grid.Row="1" Grid.Column="1"
-                Margin="10,0,10,0"
-                VerticalAlignment="Center"
-                IsEnabled="{Binding CanChangeCoreClockOffset}"
-                Height="18"
-                Value="{Binding CoreClockOffsetDisplayValue, Mode=TwoWay}"
-                Minimum="{Binding CoreClockOffsetRange.Min}"
-                Maximum="{Binding CoreClockOffsetRange.Max}"
-                IsSnapToTickEnabled="True"
-                />
-
-            <!-- Memory clock -->
-            <CheckBox
-                Grid.Row="2" Grid.Column="0"
-                IsChecked="{Binding UsesMemoryClockOffset}"
-                HorizontalAlignment="Center"
-                Margin="0,7,0,0"
-                Content="Memory Offset"
-                VerticalAlignment="Top"
-                Width="110" Height="16"
-                />
-            
-            <TextBlock
-                Grid.Row="2" Grid.Column="0"
-                HorizontalAlignment="Center"
-                Margin="0,28,0,0"
-                TextWrapping="Wrap"
-                Text="{Binding MemoryClockOffset}"
-                VerticalAlignment="Top"
-                Height="16" Width="80"
-                />
-            
-            <Slider
-                Grid.Row="2" Grid.Column="1"
-                Margin="10,0,10,0"
-                VerticalAlignment="Center"
-                IsEnabled="{Binding CanChangeMemoryClockOffset}"
-                Height="18"
-                Value="{Binding MemoryClockOffsetDisplayValue, Mode=TwoWay}"
-                Minimum="{Binding MemoryClockOffsetRange.Min}"
-                Maximum="{Binding MemoryClockOffsetRange.Max}"
-                IsSnapToTickEnabled="True"
-                />
-        </Grid>
+                <Grid Margin="5,5,5,5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="{Binding MemoryClockOffsetRange.Min}" Grid.Column="0" HorizontalAlignment="Right" />
+                    <Slider
+                        Grid.Column="1"
+                        IsSnapToTickEnabled="True"
+                        Value="{Binding MemoryClockOffsetDisplayValue, Mode=TwoWay}"
+                        Minimum="{Binding MemoryClockOffsetRange.Min}" Maximum="{Binding MemoryClockOffsetRange.Max}"
+                        Margin="10,0,10,0"
+                        VerticalAlignment="Center"
+                        Height="18"
+                        />
+                    <TextBlock Text="{Binding MemoryClockOffsetRange.Max}" Grid.Column="2" HorizontalAlignment="Left" />
+                </Grid>
+            </Expander>
+        </StackPanel>
     </Grid>
 </UserControl>

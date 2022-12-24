@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace GPUControl.ViewModels
@@ -71,110 +72,99 @@ namespace GPUControl.ViewModels
         public ValueRange MemoryClockOffsetRange { get; }
         public ValueRange PowerTargetRange { get; }
 
+        private static string? ExtractDigitsPart(string str)
+        {
+            var pattern = new Regex("([\\+\\-]?\\s*[-0-9]+)");
+            return pattern.Match(str).Captures.FirstOrDefault()?.Value;
+        }
+
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(UsesCoreClockOffset))]
         [NotifyPropertyChangedFor(nameof(CoreClockOffsetDisplayValue))]
+        [NotifyPropertyChangedFor(nameof(CoreClockOffsetDisplayString))]
         private decimal? coreClockOffset;
 
         public decimal CoreClockOffsetDisplayValue
         {
             get => coreClockOffset ?? 0;
-            set
-            {
-                coreClockOffset = value;
-                OnPropertyChanged();
-                OnPropertyChanged(nameof(CoreClockOffset));
-            }
+            set => CoreClockOffset = value;
         }
 
-        public bool UsesCoreClockOffset
+        private string? GetDisplayString(decimal? value, string suffix, bool relative)
         {
-            get => coreClockOffset.HasValue;
+            if (value == null) return null;
+
+            var formatted = relative ? string.Format("{0:+0;-#}", value) : value.ToString();
+            return formatted + suffix;
+        }
+        private string? ParseDisplayString(string? value)
+        {
+            var str = value?.Trim() ?? "";
+            if (str.Length == 0) return null;
+            else return ExtractDigitsPart(str);
+        }
+
+        public string? CoreClockOffsetDisplayString
+        {
+            get => GetDisplayString(coreClockOffset, " MHz", true);
             set
             {
-                if (IsReadOnly) throw new InvalidOperationException();
-
-                if (value) coreClockOffset = 0;
-                else coreClockOffset = null;
-
-                OnPropertyChanged();
-                OnPropertyChanged(nameof(CoreClockOffset));
-                OnPropertyChanged(nameof(CoreClockOffsetDisplayValue));
-                OnPropertyChanged(nameof(CanChangeCoreClockOffset));
+                var parsedValue = ParseDisplayString(value);
+                if (parsedValue != null) CoreClockOffset = decimal.Parse(parsedValue);
             }
         }
+
+        public bool UsesCoreClockOffset => coreClockOffset.HasValue;
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(UsesMemoryClockOffset))]
         [NotifyPropertyChangedFor(nameof(MemoryClockOffsetDisplayValue))]
+        [NotifyPropertyChangedFor(nameof(MemoryClockOffsetDisplayString))]
         private decimal? memoryClockOffset;
 
         public decimal MemoryClockOffsetDisplayValue
         {
             get => memoryClockOffset ?? 0;
-            set
-            {
-                memoryClockOffset = value;
-                OnPropertyChanged();
-                OnPropertyChanged(nameof(MemoryClockOffset));
-            }
+            set => MemoryClockOffset = value;
         }
 
-        public bool UsesMemoryClockOffset
+        public string? MemoryClockOffsetDisplayString
         {
-            get => memoryClockOffset.HasValue;
+            get => GetDisplayString(memoryClockOffset, " MHz", true);
             set
             {
-                if (IsReadOnly) throw new InvalidOperationException();
-
-                if (value) memoryClockOffset = 0;
-                else memoryClockOffset = null;
-
-                OnPropertyChanged();
-                OnPropertyChanged(nameof(MemoryClockOffset));
-                OnPropertyChanged(nameof(MemoryClockOffsetDisplayValue));
-                OnPropertyChanged(nameof(CanChangeMemoryClockOffset));
+                var parsedValue = ParseDisplayString(value);
+                if (parsedValue != null) MemoryClockOffset = decimal.Parse(parsedValue);
             }
         }
 
-        public bool CanChangeCoreClockOffset => IsWriteAllowed && UsesCoreClockOffset;
-        public bool CanChangeMemoryClockOffset => IsWriteAllowed && UsesMemoryClockOffset;
+        public bool UsesMemoryClockOffset => memoryClockOffset.HasValue;
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(UsesPowerTarget))]
         [NotifyPropertyChangedFor(nameof(PowerTargetDisplayValue))]
+        [NotifyPropertyChangedFor(nameof(PowerTargetDisplayString))]
         private decimal? powerTarget;
 
         public decimal PowerTargetDisplayValue
         {
             get => powerTarget ?? 0;
-            set
-            {
-                powerTarget = value;
-                OnPropertyChanged();
-                OnPropertyChanged(nameof(PowerTarget));
-            }
+            set => PowerTarget = value;
         }
 
-        public bool UsesPowerTarget
+        public string? PowerTargetDisplayString
         {
-            get => powerTarget.HasValue;
+            get => GetDisplayString(powerTarget, "%", false);
             set
             {
-                if (IsReadOnly) throw new InvalidOperationException();
-
-                if (value) powerTarget = 100;
-                else powerTarget = null;
-
-                OnPropertyChanged();
-                OnPropertyChanged(nameof(PowerTarget));
-                OnPropertyChanged(nameof(PowerTargetDisplayValue));
-                OnPropertyChanged(nameof(CanChangePowerTarget));
+                var parsedValue = ParseDisplayString(value);
+                if (parsedValue != null) PowerTarget = decimal.Parse(parsedValue);
             }
         }
 
-        public bool CanChangePowerTarget => IsWriteAllowed && UsesPowerTarget;
+        public bool UsesPowerTarget => powerTarget.HasValue;
+
 
         public bool IsStock => coreClockOffset == 0 && memoryClockOffset == 0 && powerTarget == 100;
 
