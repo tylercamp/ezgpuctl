@@ -1,4 +1,13 @@
-﻿                  NvAPIWrapper Library
+﻿
+===
+
+This is a slightly-modified copy of NvAPIWrapper which adds setters/constructor params
+for otherwise unmodifiable data types.
+
+===
+
+
+                  NvAPIWrapper Library
 ------------------------------------------------------------
 NvAPIWrapper is a library released under the LGPLv3 license, 
 allowing all  .Net  developers to  access and use the  NVAPI

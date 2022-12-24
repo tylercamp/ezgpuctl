@@ -1,6 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using GPUControl.gpu;
-using NvAPIWrapper.GPU;
+using GPUControl.Lib.GPU;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,6 +14,7 @@ namespace GPUControl.ViewModels
         
         public GpuStatusViewModel() : this(null)
         {
+            State = new StateData();
         }
 
         public GpuStatusViewModel(IGpuWrapper? gpu)

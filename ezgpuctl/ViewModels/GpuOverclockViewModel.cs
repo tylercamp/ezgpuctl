@@ -1,8 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using GPUControl.gpu;
-using GPUControl.Model;
-using NvAPIWrapper.GPU;
-using NvAPIWrapper.Native.GPU;
+using GPUControl.Lib.GPU;
+using GPUControl.Lib.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -51,7 +49,7 @@ namespace GPUControl.ViewModels
 
         public static GpuOverclockViewModel GetDefault(IGpuWrapper gpu)
         {
-            var defaultOverclock = new Model.GpuOverclock()
+            var defaultOverclock = new GpuOverclock()
             {
                 GpuId = gpu.GpuId,
                 CoreClockOffset = 0,

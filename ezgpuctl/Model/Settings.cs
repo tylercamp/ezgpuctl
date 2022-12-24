@@ -17,13 +17,26 @@ namespace GPUControl.Model
         {
         }
 
-        public Settings(string path)
+        public Settings(string? path)
         {
             Path = path;
         }
 
+        public enum OcModeType
+        {
+            Stock,
+            Policies,
+            SpecificPolicy,
+            SpecificProfile
+        }
+
+        public OcModeType OcMode { get; set; } = OcModeType.Policies;
+
+        public string? OcMode_SpecificProfileName { get; set; }
+        public string? OcMode_SpecificPolicyName { get; set; }
+
         [JsonIgnore]
-        public string Path { get; private set; }
+        public string? Path { get; private set; }
 
         public List<GpuOverclockProfile> Profiles { get; private set; } = new List<GpuOverclockProfile>();
 
@@ -38,14 +51,18 @@ namespace GPUControl.Model
                 select profile
             ).ToList();
 
-        public Settings Clone() => new Settings() { Profiles = Profiles.Select(p => p.Clone()).ToList(), Policies = Policies.Select(p => p.Clone()).ToList() };
+        public bool HideOnStartup { get; set; }
+
+        public bool PauseOcService { get; set; }
+
+        public bool AskBeforeClose { get; set; } = true;
 
         private Settings Sanitized
         {
             get
             {
-                // remove entries with conflicting names, remove profiles from policies where the no profiles exist
-                // with the given name
+                // remove entries with conflicting names, remove references to profiles and policies which
+                // don't exist with the given name
 
                 var result = new Settings(Path);
 
@@ -68,11 +85,27 @@ namespace GPUControl.Model
                     observedPolicyNames.Add(policy.Name);
                 }
 
+                result.OcMode = OcMode;
+                result.PauseOcService = PauseOcService;
+                result.HideOnStartup = HideOnStartup;
+                result.AskBeforeClose = AskBeforeClose;
+
+                if (OcMode_SpecificPolicyName != null && observedPolicyNames.Contains(OcMode_SpecificPolicyName))
+                    result.OcMode_SpecificPolicyName = OcMode_SpecificPolicyName;
+
+                if (OcMode_SpecificProfileName != null && observedProfileNames.Contains(OcMode_SpecificProfileName))
+                    result.OcMode_SpecificProfileName = OcMode_SpecificProfileName;
+
                 return result;
             }
         }
 
-        public void Save() => File.WriteAllText(Path, JsonConvert.SerializeObject(this));
+        public void Save()
+        {
+            if (Path == null) throw new InvalidOperationException();
+
+            File.WriteAllText(Path, JsonConvert.SerializeObject(this));
+        }
 
         public static Settings LoadFrom(string filename)
         {

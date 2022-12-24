@@ -94,7 +94,7 @@
                             </Style>
                         </StackPanel.Resources>
 
-                        <Button Content="Add" IsEnabled="{Binding CanAddRule}" HorizontalAlignment="Left" VerticalAlignment="Top" Width="60" Click="AddProgramButton_Click"/>
+                        <Button Content="Add" HorizontalAlignment="Left" VerticalAlignment="Top" Width="60" Click="AddProgramButton_Click"/>
                         <Button Content="Remove" Command="{Binding RemoveRule}"  HorizontalAlignment="Left" VerticalAlignment="Top" Width="60" />
                     </StackPanel>
 
@@ -127,8 +127,8 @@
             </GroupBox>
         </Grid>
 
-        <Button Content="Save" Margin="0,0,10,3" Grid.Row="2" HorizontalAlignment="Right" Width="29" Click="SaveButton_Click" Height="20" VerticalAlignment="Bottom"/>
-        <Button Content="Cancel" Margin="0,0,44,3" Grid.Row="2" HorizontalAlignment="Right" Width="39" Height="20" VerticalAlignment="Bottom"/>
+        <Button Content="Save" Margin="0,0,54,0" Grid.Row="2" Click="SaveButton_Click" Height="20" VerticalAlignment="Center" HorizontalAlignment="Right" Width="29"/>
+        <Button Content="Cancel" Margin="0,0,10,0" Grid.Row="2" Height="20" VerticalAlignment="Center" Click="CancelButton_Click" HorizontalAlignment="Right" Width="39"/>
 
     </Grid>
 </Window>

@@ -7,8 +7,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using NvAPIWrapper;
 
-namespace GPUControl.gpu.nvidiaimpl
+namespace GPUControl.Lib.GPU.nvidiaimpl
 {
     /// <summary>
     /// Provides utilities for user-facing actions
@@ -75,6 +76,16 @@ namespace GPUControl.gpu.nvidiaimpl
 
             //GPUApi.SetCoreVoltageBoostPercent(vm._gpu.Handle, new PrivateVoltageBoostPercentV1);
             #endregion
+        }
+
+        public static void Initialize()
+        {
+            NVIDIA.Initialize();
+        }
+
+        public static void Unload()
+        {
+            NVIDIA.Unload();
         }
 
         public static List<NvidiaGpuWrapper> GetAll()

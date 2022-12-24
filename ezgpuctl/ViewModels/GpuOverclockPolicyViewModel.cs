@@ -66,9 +66,11 @@ namespace GPUControl.ViewModels
             rules = new ObservableCollection<ProgramPolicyRuleViewModel>();
         }
 
+        public static readonly string DefaultName = "Default Policy";
+
         public static GpuOverclockPolicyViewModel GetDefault(GpuOverclockProfileViewModel defaultProfile)
         {
-            var policy = new Model.GpuOverclockPolicy("Default Policy")
+            var policy = new Model.GpuOverclockPolicy(DefaultName)
             {
                 OrderedProfileNames = new List<string>() { defaultProfile.Name },
                 Rules = new List<Model.ProgramPolicyRule>(),
@@ -78,6 +80,9 @@ namespace GPUControl.ViewModels
         }
 
         public bool IsReadOnly { get; private set; }
+
+        [ObservableProperty]
+        private bool isSelectedSpecifically = false;
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(DisplayFontWeight))]

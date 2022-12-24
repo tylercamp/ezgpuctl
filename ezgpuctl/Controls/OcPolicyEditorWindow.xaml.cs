@@ -17,6 +17,8 @@ using System.Windows.Controls.Ribbon;
 using System.Collections.Specialized;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
+using GPUControl.Overclock;
+using GPUControl.Util;
 
 namespace GPUControl.Controls
 {
@@ -34,7 +36,7 @@ namespace GPUControl.Controls
                 Policy = policyViewModel ?? new GpuOverclockPolicyViewModel();
                 Policy.Profiles.CollectionChanged += OnPolicyProfilesChanged;
                 Policy.Rules.CollectionChanged += OnPolicyRulesChanged;
-                AvailableProgramNames = ProcessMonitor.ProgramNames!;
+                AvailableProgramNames = ProcessMonitor.LastProgramNames!;
             }
             else
             {
@@ -205,11 +207,17 @@ namespace GPUControl.Controls
         {
             if (ViewModel.Policy.Name != OriginalName && NewNameSelected?.Invoke(ViewModel.Policy.Name) != true)
             {
-                MessageBox.Show($"The name \"{ViewModel.Policy.Name}\" is already in use by another policy.");
+                Xceed.Wpf.Toolkit.MessageBox.Show($"The name \"{ViewModel.Policy.Name}\" is already in use by another policy.");
                 return;
             }
 
             DialogResult = true;
+            this.Close();
+        }
+
+        private void CancelButton_Click(object sender, RoutedEventArgs e)
+        {
+            DialogResult = false;
             this.Close();
         }
     }

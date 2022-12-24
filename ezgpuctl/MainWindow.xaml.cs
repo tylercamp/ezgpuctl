@@ -1,16 +1,17 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GPUControl.Controls;
-using GPUControl.gpu;
+using GPUControl.Lib.GPU;
 using GPUControl.Model;
+using GPUControl.Overclock;
+using GPUControl.Util;
 using GPUControl.ViewModels;
-using NvAPIWrapper;
-using NvAPIWrapper.GPU;
-using NvAPIWrapper.Native;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -25,6 +26,10 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using Xceed.Wpf.AvalonDock;
+using Xceed.Wpf.AvalonDock.Layout.Serialization;
+
+using WinTS = Microsoft.Win32.TaskScheduler;
 
 namespace GPUControl
 {
@@ -34,16 +39,22 @@ namespace GPUControl
         {
             GpuStatuses = new List<GpuStatusViewModel> { new GpuStatusViewModel(null) };
             selectedGpu = GpuStatuses[0];
+
+            Settings = new SettingsViewModel();
         }
 
-        public MainWindowViewModel(List<IGpuWrapper> gpus, Settings settings)
+        public MainWindowViewModel(Dispatcher dispatcher, List<IGpuWrapper> gpus, Settings settings)
         {
             Settings = new SettingsViewModel(gpus, settings);
+            PolicyService = new PolicyServiceViewModel(Settings, dispatcher);
             GpuStatuses = gpus.Select(gpu => new GpuStatusViewModel(gpu)).ToList();
             selectedGpu = GpuStatuses[0];
 
             Settings.Policies.CollectionChanged += Policies_CollectionChanged;
 
+            AskBeforeClose = settings.AskBeforeClose;
+
+            #region Policy Organization Commands
             MovePolicyUp = new RelayCommand(
                 () =>
                 {
@@ -104,6 +115,9 @@ namespace GPUControl
                 },
                 () => SelectedPolicy?.IsReadOnly == false && Policies.IndexOf(SelectedPolicy) < Policies.Count - 2
             );
+            #endregion
+
+            Exit = new RelayCommand(() => ExitRequested?.Invoke());
         }
 
         private void Policies_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -115,6 +129,8 @@ namespace GPUControl
         }
 
         public SettingsViewModel Settings { get; private set; }
+
+        public PolicyServiceViewModel PolicyService { get; }
 
         public List<GpuStatusViewModel> GpuStatuses { get; }
 
@@ -148,6 +164,18 @@ namespace GPUControl
 
         public bool CanEditPolicy => SelectedPolicy?.IsReadOnly == false;
         public bool CanRemovePolicy => SelectedPolicy?.IsReadOnly == false;
+
+        #region Settings
+
+        public event Action ExitRequested;
+        public IRelayCommand Exit { get; }
+
+        public AutoStart RunOnStartup { get; } = new AutoStart();
+
+        [ObservableProperty]
+        private bool askBeforeClose;
+
+        #endregion
     }
 
     /// <summary>
@@ -160,34 +188,48 @@ namespace GPUControl
 
         public MainWindow()
         {
-            ProcessMonitor.Start();
+            IGpuWrapper.InitializeAll();
 
-            NVIDIA.Initialize();
             if (IGpuWrapper.UseMockGpus) _settings = Settings.LoadFrom("settings-mock.json");
             else _settings = Settings.LoadFrom("settings.json");
 
             this._gpus = IGpuWrapper.ListAll();
-            ViewModel = new MainWindowViewModel(_gpus, _settings);
+            RefreshViewModel();
+
+            ProcessMonitor.Start();
+            OverclockManager.Start(_gpus);
+            if (this._settings.PauseOcService) OverclockManager.Pause();
+            else OverclockManager.Resume();
+
+            ApplyOcMode(this._settings.OcMode, this._settings.OcMode switch
+            {
+                Settings.OcModeType.SpecificProfile => _settings.OcMode_SpecificProfileName,
+                Settings.OcModeType.SpecificPolicy => _settings.OcMode_SpecificPolicyName,
+                _ => null
+            });
 
             InitializeComponent();
 
-            KeyDown += (s, e) =>
+            if (File.Exists("dock.xml"))
             {
-                if (e.Key == Key.S && Keyboard.Modifiers == ModifierKeys.Control) _settings.Save();
-            };
+                XmlLayoutSerializer layoutSerializer = new XmlLayoutSerializer(DockManager);
+                using (var reader = new StreamReader("dock.xml"))
+                    layoutSerializer.Deserialize(reader);
+            }
 
-            var defaultPolicy = ViewModel.Policies.Where(p => p.IsReadOnly).Single();
-            var defaultProfile = ViewModel.Profiles.Where(p => p.IsReadOnly).Single();
-            PolicyMonitor.Start(_settings, defaultPolicy.AsModelObject, defaultProfile.AsModelObject, _gpus);
+            PoliciesPane.DataInit(_gpus, _settings, RefreshViewModel, UpdateOcServiceSettings);
+            ProfilesPane.DataInit(_gpus, _settings, RefreshViewModel, UpdateOcServiceSettings);
+            SettingsPane.DataInit(_gpus, _settings, RefreshViewModel);
 
-            PolicyMonitor.PoliciesApplied += (policyNames) =>
-            {
-                Dispatcher.BeginInvoke(() =>
-                {
-                    foreach (var policy in ViewModel.Policies)
-                        policy.IsActive = policyNames.Contains(policy.Name);
-                });
-            };
+
+            //OverclockManager.PoliciesApplied += (policyNames) =>
+            //{
+            //    Dispatcher.BeginInvoke(() =>
+            //    {
+            //        foreach (var policy in ViewModel.Policies)
+            //            policy.IsActive = policyNames.Contains(policy.Name);
+            //    });
+            //};
             
             // refresh GPU status view
             new DispatcherTimer(
@@ -201,148 +243,153 @@ namespace GPUControl
             ).Start();
         }
 
+        private void RefreshViewModel()
+        {
+            if (ViewModel != null)
+            {
+                ViewModel.PolicyService.OcServiceStatusChanged -= OnOcServiceStatusChanged;
+                ViewModel.PolicyService.OcModeChanged -= OnOcModeChanged;
+                ViewModel.ExitRequested -= OnCloseByContextMenu;
+            }
+
+            var vm = new MainWindowViewModel(Dispatcher, _gpus, _settings);
+            ViewModel = vm;
+            vm.PolicyService.OcServiceStatusChanged += OnOcServiceStatusChanged;
+            vm.PolicyService.OcModeChanged += OnOcModeChanged;
+            vm.ExitRequested += OnCloseByContextMenu;
+        }
+
+        private void UpdateOcServiceSettings(Settings.OcModeType targetMode)
+        {
+            if (targetMode != ViewModel.Settings.OcMode) return;
+
+            switch (targetMode)
+            {
+                case Settings.OcModeType.SpecificProfile:
+                    OverclockManager.CurrentBehavior = new SpecificProfileOverclockBehavior(getViewModelSettings, _settings.OcMode_SpecificProfileName);
+                    break;
+
+                case Settings.OcModeType.SpecificPolicy:
+                    OverclockManager.CurrentBehavior = new SpecificPolicyOverclockBehavior(getViewModelSettings, _settings.OcMode_SpecificPolicyName);
+                    break;
+            }
+        }
+
+        private async Task<Settings> getViewModelSettings()
+        {
+            SettingsViewModel? result = null;
+            await Dispatcher.BeginInvoke(() => result = ViewModel.Settings).Task;
+            return result!.AsDisplayModelObject;
+        }
+
+        private void ApplyOcMode(Settings.OcModeType targetMode, string? name)
+        {
+            switch (targetMode)
+            {
+                case Settings.OcModeType.Stock:
+                    _settings.OcMode = Settings.OcModeType.Stock;
+                    OverclockManager.CurrentBehavior = new StockOverclockBehavior();
+                    break;
+
+                case Settings.OcModeType.Policies:
+                    _settings.OcMode = Settings.OcModeType.Policies;
+                    OverclockManager.CurrentBehavior = new MultiPolicyBehavior(getViewModelSettings);
+                    break;
+
+                case Settings.OcModeType.SpecificPolicy:
+                    _settings.OcMode = Settings.OcModeType.SpecificPolicy;
+                    _settings.OcMode_SpecificPolicyName = name;
+                    OverclockManager.CurrentBehavior = new SpecificPolicyOverclockBehavior(getViewModelSettings, name);
+                    break;
+
+                case Settings.OcModeType.SpecificProfile:
+                    _settings.OcMode = Settings.OcModeType.SpecificProfile;
+                    _settings.OcMode_SpecificProfileName = name;
+                    OverclockManager.CurrentBehavior = new SpecificProfileOverclockBehavior(getViewModelSettings, name);
+                    break;
+            }
+        }
+
+        // TODO - Invoke on profile / policy name change to propagate new name
+        //        to OC service
+        private void OnOcModeChanged(Settings.OcModeType newMode, string? name)
+        {
+            ApplyOcMode(newMode, name);
+
+            _settings.Save();
+            RefreshViewModel();
+        }
+
+        private void OnOcServiceStatusChanged(bool shouldResume)
+        {
+            _settings.PauseOcService = !shouldResume;
+            _settings.Save();
+
+            if (shouldResume) OverclockManager.Resume();
+            else OverclockManager.Pause();
+
+            RefreshViewModel();
+        }
+
         public MainWindowViewModel ViewModel
         {
             get => (DataContext as MainWindowViewModel)!;
             set => DataContext = value;
         }
 
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            base.OnClosing(e);
+
+            string closeMessage = "Are you sure you'd like to exit? GPU Control will no longer be applying OC settings.";
+            if (_settings.AskBeforeClose && Xceed.Wpf.Toolkit.MessageBox.Show(closeMessage, "", MessageBoxButton.YesNo) != MessageBoxResult.Yes)
+            {
+                e.Cancel = true;
+                return;
+            }
+
+            XmlLayoutSerializer layoutSerializer = new XmlLayoutSerializer(DockManager);
+            using (var writer = new StreamWriter("dock.xml"))
+                layoutSerializer.Serialize(writer);
+        }
+
         protected override void OnClosed(EventArgs e)
         {
             base.OnClosed(e);
 
-            PolicyMonitor.Stop();
+            OverclockManager.Stop();
             ProcessMonitor.Stop();
-            NVIDIA.Unload();
+            IGpuWrapper.UnloadAll();
         }
 
-        private bool IsProfileNameInUse(string name) => !ViewModel.Profiles.Any(p => p.Name == name);
-        private bool IsPolicyNameInUse(string name) => !ViewModel.Policies.Any(p => p.Name == name);
-
-        private string FindAvailableName(string baseName, List<string> usedNames) =>
-            Enumerable
-                .Range(0, 1000)
-                .Select(i => i == 0 ? baseName : $"{baseName} ({i})")
-                .Where(l => !usedNames.Contains(l))
-                .First();
-
-        private void AddProfileButton_Click(object sender, RoutedEventArgs e)
+        private void NotifyIcon_TrayMouseDoubleClick(object sender, RoutedEventArgs e)
         {
-            var newProfileName = FindAvailableName("New Profile", ViewModel.Settings.Profiles.Select(p => p.Name).ToList());
-            var newProfile = new GpuOverclockProfile(newProfileName);
-            var newProfileVm = new GpuOverclockProfileViewModel(_gpus, newProfile);
-            var editorWindow = new OcProfileEditorWindow(newProfileName);
-            editorWindow.ViewModel = newProfileVm;
-            
-            editorWindow.NewNameSelected += IsProfileNameInUse;
-
-            if (editorWindow.ShowDialog() == true)
+            if (WindowState == WindowState.Minimized)
             {
-                _settings.Profiles.Add(newProfileVm.AsModelObject);
-                _settings.Save();
-
-                ViewModel = new MainWindowViewModel(_gpus, _settings);
+                WindowState = WindowState.Normal;
+                Activate();
             }
-
-            editorWindow.NewNameSelected -= IsProfileNameInUse;
-        }
-
-        private void RemoveProfileButton_Click(object sender, RoutedEventArgs e)
-        {
-            var profile = ViewModel.SelectedProfile!;
-            var affectedPolicies = ViewModel.Policies.Where(pol => pol.Profiles.Contains(profile)).ToList();
-
-            string detailsMsg = "";
-            if (affectedPolicies.Count > 0)
+            else
             {
-                detailsMsg = $" Removing this profile will affect {affectedPolicies.Count} policies.";
-            }
-
-            if (MessageBox.Show($"Are you sure you'd like to remove '{profile.Name}'?{detailsMsg}", "Remove Profile", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
-            {
-                var modelProfile = _settings.Profiles.Single(p => p.Name == profile.Name);
-                var modelPolicies = _settings.Policies.Where(p => affectedPolicies.Any(ap => ap.Name == p.Name)).ToList();
-                foreach (var policy in modelPolicies)
-                    policy.OrderedProfileNames.Remove(modelProfile.Name);
-
-                _settings.Profiles.Remove(modelProfile);
-                _settings.Save();
-
-                ViewModel = new MainWindowViewModel(_gpus, _settings);
+                WindowState = WindowState.Minimized;
             }
         }
 
-        private void EditProfileButton_Click(object sender, RoutedEventArgs e)
+        private void OnCloseByContextMenu()
         {
-            var profile = ViewModel.SelectedProfile!.AsModelObject;
-            var editorWindow = new OcProfileEditorWindow(profile.Name);
-
-            editorWindow.NewNameSelected += IsProfileNameInUse;
-            editorWindow.ViewModel = new GpuOverclockProfileViewModel(_gpus, profile);
-
-            if (editorWindow.ShowDialog() == true)
-            {
-                var oldProfileIndex = _settings.Profiles.FindIndex(p => p.Name == profile.Name);
-                _settings.Profiles[oldProfileIndex] = profile;
-                _settings.Save();
-
-                ViewModel = new MainWindowViewModel(_gpus, _settings);
-            }
+            this.Close();
         }
 
-        private void AddPolicyButton_Click(object sender, RoutedEventArgs e)
+        private void Window_StateChanged(object sender, EventArgs e)
         {
-            var newPolicyName = FindAvailableName("New Policy", ViewModel.Policies.Select(p => p.Name).ToList());
-
-            var newPolicy = new GpuOverclockPolicy(newPolicyName);
-            var newPolicyVm = new GpuOverclockPolicyViewModel(ViewModel.Settings, newPolicy);
-            var editorWindow = new OcPolicyEditorWindow(newPolicyName);
-
-            editorWindow.ViewModel = new OcPolicyEditorWindowViewModel(newPolicyVm);
-            editorWindow.NewNameSelected += IsPolicyNameInUse;
-
-            if (editorWindow.ShowDialog() == true)
-            {
-                _settings.Policies.Add(newPolicyVm.AsModelObject);
-                _settings.Save();
-
-                ViewModel = new MainWindowViewModel(_gpus, _settings);
-            }
-
-            editorWindow.NewNameSelected -= IsPolicyNameInUse;
+            if (WindowState == WindowState.Minimized) ShowInTaskbar = false;
+            else ShowInTaskbar = true;
         }
 
-        private void RemovePolicyButton_Click(object sender, RoutedEventArgs e)
+        private void MenuItem_Open_Click(object sender, RoutedEventArgs e)
         {
-            var policy = ViewModel.SelectedPolicy!;
-            if (MessageBox.Show($"Are you sure you'd like to remove the policy '{policy.Name}'?", "Remove Policy", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
-            {
-                var modelPolicy = _settings.Policies.Single(p => p.Name == policy.Name);
-                _settings.Policies.Remove(modelPolicy);
-                _settings.Save();
-
-                ViewModel = new MainWindowViewModel(_gpus, _settings);
-            }
-        }
-
-        private void EditPolicyButton_Click(object sender, RoutedEventArgs e)
-        {
-            var modelPolicy = ViewModel.SelectedPolicy!.AsModelObject;
-            var editorWindow = new OcPolicyEditorWindow(modelPolicy.Name);
-
-            editorWindow.ViewModel = new OcPolicyEditorWindowViewModel(new GpuOverclockPolicyViewModel(ViewModel.Settings, modelPolicy));
-            editorWindow.NewNameSelected += IsPolicyNameInUse;
-
-            if (editorWindow.ShowDialog() == true)
-            {
-                var oldPolicyIndex = _settings.Policies.FindIndex(p => p.Name == modelPolicy.Name);
-                _settings.Policies[oldPolicyIndex] = editorWindow.ViewModel.Policy.AsModelObject;
-                _settings.Save();
-
-                ViewModel = new MainWindowViewModel(_gpus, _settings);
-            }
-
-            editorWindow.NewNameSelected -= IsPolicyNameInUse;
+            WindowState = WindowState.Normal;
+            Activate();
         }
     }
 }

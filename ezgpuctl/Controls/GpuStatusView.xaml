@@ -6,7 +6,9 @@
              xmlns:local="clr-namespace:GPUControl.Controls"
              xmlns:vm="clr-namespace:GPUControl.ViewModels"
              mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="600" d:Background="White">
+             d:DesignHeight="300" d:DesignWidth="600" d:Background="White"
+             d:DataContext="{d:DesignInstance Type=vm:GpuStatusViewModel, IsDesignTimeCreatable=True}"
+             >
     <UserControl.DataContext>
         <vm:GpuStatusViewModel />
     </UserControl.DataContext>
@@ -16,51 +18,56 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <TextBlock x:Name="GpuName" HorizontalAlignment="Left" TextWrapping="Wrap" Text="{Binding GpuName}" VerticalAlignment="Center" FontSize="20" Margin="10,0,0,0" />
-        <GroupBox Header="Clocks" Grid.Row="1" HorizontalAlignment="Left" Width="200" Margin="0,0,0,10">
-            <Grid >
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition/>
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
+        <WrapPanel Grid.Row="1">
+            <GroupBox Header="Clocks" HorizontalAlignment="Left" Width="200">
+                <Grid >
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
 
-                <Label Content="Current" Grid.Column="1" FontStyle="Italic" />
-                <Label Content="Base" Grid.Column="2" FontStyle="Italic" />
+                    <Label Content="Current" Grid.Column="1" FontStyle="Italic" />
+                    <Label Content="Base" Grid.Column="2" FontStyle="Italic" />
 
-                <StackPanel Grid.Column="0" Grid.Row="1" Margin="0,0,5,0">
-                    <TextBlock FontWeight="Bold">Core</TextBlock>
-                    <TextBlock FontWeight="Bold">Memory</TextBlock>
-                </StackPanel>
-                <StackPanel Grid.Column="1" Grid.Row="1">
-                    <TextBlock Text="{Binding State.MemoryBaseClockString}" />
-                    <TextBlock Text="{Binding State.MemoryClockString}" />
-                </StackPanel>
-                <StackPanel Grid.Column="2" Grid.Row="1">
-                    <TextBlock Text="{Binding State.CoreBaseClockString}" />
-                    <TextBlock Text="{Binding State.MemoryBaseClockString}" />
-                </StackPanel>
-            </Grid>
-        </GroupBox>
-        <GroupBox Header="Targets" Margin="205,0,0,10" Grid.Row="1" HorizontalAlignment="Left" Width="218">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="100*"/>
-                </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Grid.Row="1" Margin="0,0,5,0">
+                        <TextBlock FontWeight="Bold">Core</TextBlock>
+                        <TextBlock FontWeight="Bold">Memory</TextBlock>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Grid.Row="1">
+                        <TextBlock Text="{Binding State.MemoryBaseClockString}" />
+                        <TextBlock Text="{Binding State.MemoryClockString}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Grid.Row="1">
+                        <TextBlock Text="{Binding State.CoreBaseClockString}" />
+                        <TextBlock Text="{Binding State.MemoryBaseClockString}" />
+                    </StackPanel>
+                </Grid>
+            </GroupBox>
+            <GroupBox Header="Targets" Width="157">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="100*"/>
+                    </Grid.ColumnDefinitions>
 
-                <StackPanel Grid.Column="0">
-                    <TextBlock FontWeight="Bold">Power</TextBlock>
-                    <TextBlock FontWeight="Bold">Temperature</TextBlock>
-                </StackPanel>
-                <StackPanel Grid.Column="1" Margin="5,0,0,0">
-                    <TextBlock Text="{Binding State.PowerTargetString}" />
-                    <TextBlock Text="{Binding State.TempTargetString}" />
-                </StackPanel>
-            </Grid>
-        </GroupBox>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock FontWeight="Bold">Power</TextBlock>
+                        <TextBlock FontWeight="Bold">Temperature</TextBlock>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Margin="5,0,0,0">
+                        <TextBlock Text="{Binding State.PowerTargetString}" />
+                        <TextBlock Text="{Binding State.TempTargetString}" />
+                    </StackPanel>
+                </Grid>
+            </GroupBox>
+            <GroupBox Header="Info">
+                
+            </GroupBox>
+        </WrapPanel>
     </Grid>
 </UserControl>

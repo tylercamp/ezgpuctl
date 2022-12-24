@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GPUControl.gpu.nvidiaimpl
+namespace GPUControl.Lib.GPU.nvidiaimpl
 {
     public class NvidiaPowerInfo : IPowerInfo
     {

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GPUControl.gpu.mockimpl
+namespace GPUControl.Lib.GPU.mockimpl
 {
     public class MockPowerInfo : IPowerInfo
     {

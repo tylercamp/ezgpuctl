@@ -1,9 +1,5 @@
-﻿using NvAPIWrapper.GPU;
-using NvAPIWrapper.Native;
-using NvAPIWrapper.Native.GPU.Structures;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,14 +13,14 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace GPUControl.Controls
+namespace GPUControl.MainPanes
 {
     /// <summary>
-    /// Interaction logic for OcEditorView.xaml
+    /// Interaction logic for GpuStatusViewPane.xaml
     /// </summary>
-    public partial class OcEditorView : UserControl
+    public partial class GpuStatusPane : UserControl
     {
-        public OcEditorView()
+        public GpuStatusPane()
         {
             InitializeComponent();
         }

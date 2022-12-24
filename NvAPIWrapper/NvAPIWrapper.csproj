@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net60</TargetFrameworks>
+    <TargetFrameworks></TargetFrameworks>
     <Version>0.8.1.109</Version>
     <Company>falahati.net</Company>
     <Description>NvAPIWrapper is a .Net wrapper for NVIDIA public API</Description>
@@ -17,6 +17,7 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <Title>NvAPIWrapper (for NVAPI 410)</Title>
     <PackageId>NvAPIWrapper.Net</PackageId>
+	  <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <OutputPath>..\Debug</OutputPath>
@@ -28,12 +29,6 @@
     <DocumentationFile>..\Release\NvAPIWrapper.xml</DocumentationFile>
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
-  <ItemGroup>
-    <PackageReference PrivateAssets="all" Include="MSBump" Version="2.3.2">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
-    </PackageReference>
-  </ItemGroup>
   <ItemGroup>
     <Content Include="readme.txt">
       <Pack>true</Pack>

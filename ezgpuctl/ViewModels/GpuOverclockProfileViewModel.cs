@@ -1,7 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using GPUControl.gpu;
+using GPUControl.Lib.GPU;
+using GPUControl.Lib.Model;
 using GPUControl.Model;
-using NvAPIWrapper.GPU;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -57,11 +57,13 @@ namespace GPUControl.ViewModels
             );
         }
 
+        public static readonly string DefaultName = "Default Profile";
+
         public static GpuOverclockProfileViewModel GetDefault(List<IGpuWrapper> gpus)
         {
             var overclockVms = gpus.Select(gpu => GpuOverclockViewModel.GetDefault(gpu)).ToList();
 
-            var profile = new Model.GpuOverclockProfile("Default Profile")
+            var profile = new Model.GpuOverclockProfile(DefaultName)
             {
                 OverclockSettings = overclockVms.Select(vm => vm.AsModelObject).ToList()
             };
@@ -109,6 +111,9 @@ namespace GPUControl.ViewModels
         }
 
         public ReadOnlyCollection<GpuOverclockViewModel> Overclocks { get; private set; }
+
+        [ObservableProperty]
+        private bool isSelectedSpecifically = false;
 
         public GpuOverclockProfile AsModelObject => new GpuOverclockProfile(name)
         {

@@ -48,7 +48,7 @@ namespace GPUControl.Controls
         {
             if (ViewModel.Name != OriginalName && NewNameSelected?.Invoke(ViewModel.Name) != true)
             {
-                MessageBox.Show($"The name \"{ViewModel.Name}\" is already in use by another profile.");
+                Xceed.Wpf.Toolkit.MessageBox.Show($"The name \"{ViewModel.Name}\" is already in use by another profile.");
                 return;
             }
 

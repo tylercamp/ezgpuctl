@@ -1,0 +1,9 @@
+﻿This software uses NvAPIWrapper, licensed under LGPL 3:
+https://github.com/falahati/NvAPIWrapper
+https://github.com/falahati/NvAPIWrapper/blob/master/LICENSE
+
+Modifications for NvAPIWrapper can be found in this software's repository:
+https://github.com/tylercamp/ezgpuctl
+
+System Tray icon by "Smashicons":
+https://www.flaticon.com/free-icon/gpu_4617742

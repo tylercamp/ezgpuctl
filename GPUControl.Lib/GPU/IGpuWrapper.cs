@@ -1,12 +1,12 @@
-﻿using GPUControl.gpu.mockimpl;
-using GPUControl.gpu.nvidiaimpl;
+﻿using GPUControl.Lib.GPU.mockimpl;
+using GPUControl.Lib.GPU.nvidiaimpl;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GPUControl.gpu
+namespace GPUControl.Lib.GPU
 {
     public abstract class IGpuWrapper
     {
@@ -23,6 +23,16 @@ namespace GPUControl.gpu
 
 
         public static bool UseMockGpus { get; set; } = false;
+
+        public static void InitializeAll()
+        {
+            NvidiaGpuWrapper.Initialize();
+        }
+
+        public static void UnloadAll()
+        {
+            NvidiaGpuWrapper.Unload();
+        }
 
         public static List<IGpuWrapper> ListAll()
         {

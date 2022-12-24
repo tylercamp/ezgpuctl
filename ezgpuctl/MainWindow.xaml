@@ -3,92 +3,99 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:controls="clr-namespace:GPUControl.Controls"
         xmlns:local="clr-namespace:GPUControl"
+        xmlns:mpane="clr-namespace:GPUControl.MainPanes"
+        xmlns:xcad="http://schemas.xceed.com/wpf/xaml/avalondock"
+        xmlns:tb="http://www.hardcodet.net/taskbar"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=local:MainWindowViewModel, IsDesignTimeCreatable=True}"
-        Title="EZ GPU Control" Height="450" Width="800">
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="277*"/>
-            <RowDefinition Height="157*"/>
-        </Grid.RowDefinitions>
-        <Grid Grid.Row="0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="1*"/>
-                <ColumnDefinition Width="1*"/>
-            </Grid.ColumnDefinitions>
-            <Grid Grid.Column="0">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="40"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
+        Title="GPU Control" Height="450" Width="800"
+        Icon="/Resources/gpu.ico"
+        StateChanged="Window_StateChanged">
+    <Window.Resources>
+        <ContextMenu x:Key="TrayContextMenu">
+            <MenuItem Header="OC Mode" IsEnabled="False" FontWeight="Bold" />
+            <MenuItem Header="Stock" IsCheckable="False" IsChecked="{Binding PolicyService.IsOcModeStock, Mode=OneWay}" Command="{Binding PolicyService.SetOcModeStock}" />
+            <MenuItem Header="Policies" IsCheckable="False" IsChecked="{Binding PolicyService.IsOcModePolicies, Mode=OneWay}" Command="{Binding PolicyService.SetOcModePolicies}" />
 
-                <Label Grid.Row="0" Content="Policies" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Center"/>
-
-                <Button Grid.Row="0" Content="Add" Margin="350,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" Width="40" Click="AddPolicyButton_Click"/>
-                <Button Grid.Row="0" Content="Remove" IsEnabled="{Binding CanRemovePolicy}" Margin="270,0,0,0" VerticalAlignment="Center" Click="RemovePolicyButton_Click" HorizontalAlignment="Left" Width="46"/>
-                <Button Grid.Row="0" Content="Edit" IsEnabled="{Binding CanEditPolicy}" Margin="321,0,0,0" VerticalAlignment="Center" Click="EditPolicyButton_Click" HorizontalAlignment="Left" Width="24"/>
-
-                <Grid Grid.Row="1" Margin="0,0,10,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="110"/>
-                        <ColumnDefinition Width="299*"/>
-                    </Grid.ColumnDefinitions>
-                    <ListBox Grid.Column="1" ItemsSource="{Binding Policies}" SelectedItem="{Binding SelectedPolicy, Mode=TwoWay}">
-                        <ListBox.ItemTemplate>
-                            <DataTemplate>
-                                <Label Content="{Binding Name}" FontWeight="{Binding DisplayFontWeight}" FontStyle="{Binding DisplayFontStyle}" />
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
-                    <Button Content="Move Up" Command="{Binding MovePolicyUp}" Margin="5,10,5,0" VerticalAlignment="Top"/>
-                    <Button Content="Move Down" Command="{Binding MovePolicyDown}" Margin="5,35,5,0" VerticalAlignment="Top"/>
-                    <Button Content="Move to Top" Command="{Binding MovePolicyTop}" Margin="5,60,5,0" VerticalAlignment="Top"/>
-                    <Button Content="Move to Bottom" Command="{Binding MovePolicyBottom}" Margin="5,85,5,0" VerticalAlignment="Top"/>
-                </Grid>
-            </Grid>
-            <Grid Grid.Column="1">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="40"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-                <Label Grid.Row="0" Content="Profiles" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Center" Height="26" Width="49"/>
-                <Button Content="Add" Margin="350,0,0,0" VerticalAlignment="Center" Height="20" Click="AddProfileButton_Click" HorizontalAlignment="Left" Width="40"/>
-                <ListView Grid.Row="1" ItemsSource="{Binding Profiles}" SelectedItem="{Binding SelectedProfile, Mode=TwoWay}">
-                    <ListView.ItemTemplate>
-                        <DataTemplate>
-                            <Label Content="{Binding Label}">
-                                <Label.Style>
-                                    <Style TargetType="Label">
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsReadOnly}" Value="True">
-                                                <Setter Property="FontStyle" Value="Italic" />
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Label.Style>
-                            </Label>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
-                <Button Content="Remove" IsEnabled="{Binding CanRemoveProfile}" Margin="270,0,0,0" VerticalAlignment="Center" Click="RemoveProfileButton_Click" HorizontalAlignment="Left" Width="46"/>
-                <Button Content="Edit" IsEnabled="{Binding CanEditProfile}" Margin="321,0,0,0" VerticalAlignment="Center" Click="EditProfileButton_Click" HorizontalAlignment="Left" Width="24"/>
-            </Grid>
-        </Grid>
-        <Grid Grid.Row="1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-            <ListBox Grid.Column="0" ItemsSource="{Binding GpuStatuses}" SelectedValue="{Binding SelectedGpu, Mode=TwoWay}">
-                <ListBox.ItemTemplate>
+            <MenuItem Header="Specific Policy" IsCheckable="False" IsChecked="{Binding PolicyService.IsOcModeSpecificPolicy, Mode=OneWay}" ItemsSource="{Binding PolicyService.PolicyApplications}">
+                <MenuItem.ItemTemplate>
                     <DataTemplate>
-                        <TextBlock Text="{Binding GpuName}" />
+                        <TextBlock Text="{Binding Name}" />
                     </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
-            <controls:GpuStatusView Grid.Column="1" DataContext="{Binding SelectedGpu}" />
-        </Grid>
+                </MenuItem.ItemTemplate>
+                <MenuItem.ItemContainerStyle>
+                    <Style TargetType="{x:Type MenuItem}">
+                        <Setter Property="IsChecked" Value="{Binding IsInUse}" />
+                        <Setter Property="Command" Value="{Binding Select}" />
+                        <Setter Property="CommandParameter" Value="{Binding Name}" />
+                    </Style>
+                </MenuItem.ItemContainerStyle>
+            </MenuItem>
+
+            <MenuItem Header="Specific Profile" IsCheckable="False" IsChecked="{Binding PolicyService.IsOcModeSpecificProfile, Mode=OneWay}" ItemsSource="{Binding PolicyService.ProfileApplications}">
+                <MenuItem.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Name}" />
+                    </DataTemplate>
+                </MenuItem.ItemTemplate>
+                <MenuItem.ItemContainerStyle>
+                    <Style TargetType="{x:Type MenuItem}">
+                        <Setter Property="IsChecked" Value="{Binding IsInUse}" />
+                        <Setter Property="Command" Value="{Binding Select}" />
+                        <Setter Property="CommandParameter" Value="{Binding Name}" />
+                    </Style>
+                </MenuItem.ItemContainerStyle>
+            </MenuItem>
+
+            <Separator />
+
+            <MenuItem Header="Open" Click="MenuItem_Open_Click" />
+            <MenuItem Header="Pause" Command="{Binding PolicyService.StopOcService}" />
+            <MenuItem Header="Resume" Command="{Binding PolicyService.StartOcService}" />
+
+            <Separator />
+
+            <MenuItem Header="Exit" Command="{Binding Exit}" />
+        </ContextMenu>
+    </Window.Resources>
+    <Grid>
+        <tb:TaskbarIcon
+            x:Name="NotifyIcon"
+            IconSource="/Resources/gpu.ico"
+            MenuActivation="RightClick"
+            ContextMenu="{StaticResource TrayContextMenu}"
+            TrayMouseDoubleClick="NotifyIcon_TrayMouseDoubleClick"
+            />
+        <xcad:DockingManager x:Name="DockManager">
+            <xcad:LayoutRoot>
+                <xcad:LayoutPanel Orientation="Vertical">
+                    <xcad:LayoutPanel Orientation="Horizontal">
+                        <xcad:LayoutAnchorablePane>
+                            <xcad:LayoutAnchorable Title="Policies" CanClose="False" CanHide="False" ContentId="PoliciesPane">
+                                <mpane:PoliciesPane x:Name="PoliciesPane" DataContext="{Binding Path=DataContext, RelativeSource={RelativeSource AncestorType=local:MainWindow}}" />
+                            </xcad:LayoutAnchorable>
+                        </xcad:LayoutAnchorablePane>
+                        <xcad:LayoutAnchorablePane>
+                            <xcad:LayoutAnchorable Title="Profiles" CanClose="False" CanHide="False" ContentId="ProfilesPane">
+                                <mpane:ProfilesPane x:Name="ProfilesPane" DataContext="{Binding Path=DataContext, RelativeSource={RelativeSource AncestorType=local:MainWindow}}" />
+                            </xcad:LayoutAnchorable>
+                        </xcad:LayoutAnchorablePane>
+                    </xcad:LayoutPanel>
+                    <xcad:LayoutPanel Orientation="Horizontal">
+                        <xcad:LayoutAnchorablePane>
+                            <xcad:LayoutAnchorable Title="Settings" CanClose="False" CanHide="False" ContentId="OcStatusPane">
+                                <mpane:SettingsPane x:Name="SettingsPane" DataContext="{Binding Path=DataContext, RelativeSource={RelativeSource AncestorType=local:MainWindow}}" />
+                            </xcad:LayoutAnchorable>
+                        </xcad:LayoutAnchorablePane>
+                        <xcad:LayoutAnchorablePane>
+                            <xcad:LayoutAnchorable Title="GPU Status" CanClose="False" CanHide="False" ContentId="GpuStatusPane">
+                                <mpane:GpuStatusPane DataContext="{Binding Path=DataContext, RelativeSource={RelativeSource AncestorType=local:MainWindow}}" />
+                            </xcad:LayoutAnchorable>
+                        </xcad:LayoutAnchorablePane>
+                    </xcad:LayoutPanel>
+                </xcad:LayoutPanel>
+            </xcad:LayoutRoot>
+        </xcad:DockingManager>
     </Grid>
 </Window>

@@ -1,11 +1,11 @@
-﻿using GPUControl.Model;
+﻿using GPUControl.Lib.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GPUControl.gpu.mockimpl
+namespace GPUControl.Lib.GPU.mockimpl
 {
     public class MockGpuWrapper : IGpuWrapper
     {
