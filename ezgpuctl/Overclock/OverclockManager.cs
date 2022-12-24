@@ -50,7 +50,12 @@ namespace GPUControl.Overclock
                 {
                     if (CurrentBehavior != null && !currentContext.Paused)
                     {
-                        var result = CurrentBehavior.Apply(gpus).Result;
+                        var task = CurrentBehavior.Apply(gpus);
+
+                        try { task.Wait(token); }
+                        catch { break; }
+
+                        var result = task.Result;
                         BehaviorApplied?.Invoke(result);
                     }
 
