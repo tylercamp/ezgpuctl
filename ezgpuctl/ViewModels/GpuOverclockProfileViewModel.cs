@@ -88,9 +88,9 @@ namespace GPUControl.ViewModels
                         if (oc.IsStock) parts.Add("stock settings");
                         else
                         {
-                            if (oc.UsesPowerTarget) parts.Add($"power: {oc.PowerTarget}%");
-                            if (oc.UsesCoreClockOffset) parts.Add($"core: {oc.CoreClockOffset}MHz");
-                            if (oc.UsesMemoryClockOffset) parts.Add($"memory: {oc.MemoryClockOffset}MHz");
+                            if (oc.PowerTarget.HasValue) parts.Add($"power: {oc.PowerTarget.Value}%");
+                            if (oc.CoreOffset.HasValue) parts.Add($"core: {oc.CoreOffset.Value}MHz");
+                            if (oc.CoreOffset.HasValue) parts.Add($"memory: {oc.MemoryOffset.Value}MHz");
                         }
 
                         if (parts.Count > 0)

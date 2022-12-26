@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:vms="clr-namespace:GPUControl.ViewModels"
+             xmlns:controls="clr-namespace:GPUControl.Controls"
              xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
              mc:Ignorable="d" 
              d:DesignHeight="388" d:DesignWidth="353.333" d:Background="White"
@@ -13,93 +14,13 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
+        
         <Label Grid.Row="0" Content="{Binding GpuLabel}" FontSize="20" />
 
         <StackPanel Grid.Row="1">
-            <Expander IsExpanded="True">
-                <Expander.Header>
-                    <!-- https://stackoverflow.com/questions/31161591/wpf-expander-header-horizontal-stretch -->
-                    <Grid HorizontalAlignment="{Binding HorizontalAlignment, RelativeSource={RelativeSource AncestorType=ContentPresenter}, Mode=OneWayToSource}">
-                        <Label Content="Power" HorizontalAlignment="Left" />
-                        <xctk:WatermarkTextBox Watermark="(Not Set)" Margin="0,0,10,0" HorizontalAlignment="Right" Width="80" Text="{Binding PowerTargetDisplayString, Mode=TwoWay}" />
-                    </Grid>
-                </Expander.Header>
-
-                <Grid Margin="5,5,5,5">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Text="{Binding PowerTargetRange.Min}" Grid.Column="0" HorizontalAlignment="Right" />
-                    <Slider
-                        Grid.Column="1"
-                        IsSnapToTickEnabled="True"
-                        Value="{Binding PowerTargetDisplayValue, Mode=TwoWay}"
-                        Minimum="{Binding PowerTargetRange.Min}" Maximum="{Binding PowerTargetRange.Max}"
-                        Margin="10,0,10,0"
-                        VerticalAlignment="Center"
-                        Height="18"
-                        />
-                    <TextBlock Text="{Binding PowerTargetRange.Max}" Grid.Column="2" HorizontalAlignment="Left" />
-                </Grid>
-            </Expander>
-            <Expander IsExpanded="True">
-                <Expander.Header>
-                    <!-- https://stackoverflow.com/questions/31161591/wpf-expander-header-horizontal-stretch -->
-                    <Grid HorizontalAlignment="{Binding HorizontalAlignment, RelativeSource={RelativeSource AncestorType=ContentPresenter}, Mode=OneWayToSource}">
-                        <Label Content="Core Offset" HorizontalAlignment="Left" />
-                        <xctk:WatermarkTextBox Watermark="(Not Set)" Margin="0,0,10,0" HorizontalAlignment="Right" Width="80" Text="{Binding CoreClockOffsetDisplayString, Mode=TwoWay}" />
-                    </Grid>
-                </Expander.Header>
-
-                <Grid Margin="5,5,5,5">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Text="{Binding CoreClockOffsetRange.Min}" Grid.Column="0" HorizontalAlignment="Right" />
-                    <Slider
-                        Grid.Column="1"
-                        IsSnapToTickEnabled="True"
-                        Value="{Binding CoreClockOffsetDisplayValue, Mode=TwoWay}"
-                        Minimum="{Binding CoreClockOffsetRange.Min}" Maximum="{Binding CoreClockOffsetRange.Max}"
-                        Margin="10,0,10,0"
-                        VerticalAlignment="Center"
-                        Height="18"
-                        />
-                    <TextBlock Text="{Binding CoreClockOffsetRange.Max}" Grid.Column="2" HorizontalAlignment="Left" />
-                </Grid>
-            </Expander>
-            <Expander IsExpanded="True">
-                <Expander.Header>
-                    <!-- https://stackoverflow.com/questions/31161591/wpf-expander-header-horizontal-stretch -->
-                    <Grid HorizontalAlignment="{Binding HorizontalAlignment, RelativeSource={RelativeSource AncestorType=ContentPresenter}, Mode=OneWayToSource}">
-                        <Label Content="Memory Offset" HorizontalAlignment="Left" />
-                        <xctk:WatermarkTextBox Watermark="(Not Set)" Margin="0,0,10,0" HorizontalAlignment="Right" Width="80" Text="{Binding MemoryClockOffsetDisplayString, Mode=TwoWay}" />
-                    </Grid>
-                </Expander.Header>
-
-                <Grid Margin="5,5,5,5">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Text="{Binding MemoryClockOffsetRange.Min}" Grid.Column="0" HorizontalAlignment="Right" />
-                    <Slider
-                        Grid.Column="1"
-                        IsSnapToTickEnabled="True"
-                        Value="{Binding MemoryClockOffsetDisplayValue, Mode=TwoWay}"
-                        Minimum="{Binding MemoryClockOffsetRange.Min}" Maximum="{Binding MemoryClockOffsetRange.Max}"
-                        Margin="10,0,10,0"
-                        VerticalAlignment="Center"
-                        Height="18"
-                        />
-                    <TextBlock Text="{Binding MemoryClockOffsetRange.Max}" Grid.Column="2" HorizontalAlignment="Left" />
-                </Grid>
-            </Expander>
+            <controls:CollapsibleValueRangeSlider DataContext="{Binding PowerTarget}" />
+            <controls:CollapsibleValueRangeSlider DataContext="{Binding CoreOffset}" />
+            <controls:CollapsibleValueRangeSlider DataContext="{Binding MemoryOffset}" />
         </StackPanel>
     </Grid>
 </UserControl>

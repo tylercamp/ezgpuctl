@@ -17,13 +17,11 @@ namespace GPUControl.ViewModels
         {
             GpuLabel = "GPU Label";
             IsReadOnly = false;
-            coreClockOffset = 0;
-            memoryClockOffset = 0;
-            powerTarget = null;
 
-            PowerTargetRange = new ValueRange(0, 100);
-            CoreClockOffsetRange = new ValueRange(-1000, 1000);
-            MemoryClockOffsetRange = new ValueRange(-1000, 1000);
+            PowerTarget = new RangeViewModel("Power", new ValueRange(0, 100), 0, "%", isRelative: false);
+            CoreOffset = new RangeViewModel("Core Offset", new ValueRange(-1000, 1000), 0, " MHz", isRelative: true);
+            MemoryOffset = new RangeViewModel("Memory Offset", new ValueRange(-1000, 1000), null, " MHz", isRelative: true);
+
             GpuId = 0;
         }
 
@@ -34,13 +32,10 @@ namespace GPUControl.ViewModels
             GpuId = gpu.GpuId;
 
             GpuLabel = gpu.Label;
-            coreClockOffset = overclock.CoreClockOffset;
-            memoryClockOffset = overclock.MemoryClockOffset;
-            powerTarget = overclock.PowerTarget;
 
-            PowerTargetRange = gpu.Power.TargetPowerRange;
-            CoreClockOffsetRange = gpu.Clocks.CoreClockOffsetRangeMhz;
-            MemoryClockOffsetRange = gpu.Clocks.MemoryClockOffsetRangeMhz;
+            PowerTarget = new RangeViewModel("Power", gpu.Power.TargetPowerRange, overclock.PowerTarget, "%", isRelative: false);
+            CoreOffset = new RangeViewModel("Core Offset", gpu.Clocks.CoreClockOffsetRangeMhz, overclock.CoreClockOffset, " MHz", isRelative: true);
+            MemoryOffset = new RangeViewModel("Memory Offset", gpu.Clocks.MemoryClockOffsetRangeMhz, overclock.MemoryClockOffset, " MHz", isRelative: true);
         }
 
         private GpuOverclockViewModel(IGpuWrapper gpu, GpuOverclock overclock, bool isReadOnly) : this(gpu, overclock)
@@ -68,112 +63,18 @@ namespace GPUControl.ViewModels
         
         public uint GpuId { get; }
 
-        public ValueRange CoreClockOffsetRange { get; }
-        public ValueRange MemoryClockOffsetRange { get; }
-        public ValueRange PowerTargetRange { get; }
+        public RangeViewModel CoreOffset { get; }
+        public RangeViewModel MemoryOffset { get; }
+        public RangeViewModel PowerTarget { get; }
 
-        private static string? ExtractDigitsPart(string str)
-        {
-            var pattern = new Regex("([\\+\\-]?\\s*[-0-9]+)");
-            return pattern.Match(str).Captures.FirstOrDefault()?.Value;
-        }
-
-
-        [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(UsesCoreClockOffset))]
-        [NotifyPropertyChangedFor(nameof(CoreClockOffsetDisplayValue))]
-        [NotifyPropertyChangedFor(nameof(CoreClockOffsetDisplayString))]
-        private decimal? coreClockOffset;
-
-        public decimal CoreClockOffsetDisplayValue
-        {
-            get => coreClockOffset ?? 0;
-            set => CoreClockOffset = value;
-        }
-
-        private string? GetDisplayString(decimal? value, string suffix, bool relative)
-        {
-            if (value == null) return null;
-
-            var formatted = relative ? string.Format("{0:+0;-#}", value) : value.ToString();
-            return formatted + suffix;
-        }
-        private string? ParseDisplayString(string? value)
-        {
-            var str = value?.Trim() ?? "";
-            if (str.Length == 0) return null;
-            else return ExtractDigitsPart(str);
-        }
-
-        public string? CoreClockOffsetDisplayString
-        {
-            get => GetDisplayString(coreClockOffset, " MHz", true);
-            set
-            {
-                var parsedValue = ParseDisplayString(value);
-                if (parsedValue != null) CoreClockOffset = decimal.Parse(parsedValue);
-            }
-        }
-
-        public bool UsesCoreClockOffset => coreClockOffset.HasValue;
-
-        [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(UsesMemoryClockOffset))]
-        [NotifyPropertyChangedFor(nameof(MemoryClockOffsetDisplayValue))]
-        [NotifyPropertyChangedFor(nameof(MemoryClockOffsetDisplayString))]
-        private decimal? memoryClockOffset;
-
-        public decimal MemoryClockOffsetDisplayValue
-        {
-            get => memoryClockOffset ?? 0;
-            set => MemoryClockOffset = value;
-        }
-
-        public string? MemoryClockOffsetDisplayString
-        {
-            get => GetDisplayString(memoryClockOffset, " MHz", true);
-            set
-            {
-                var parsedValue = ParseDisplayString(value);
-                if (parsedValue != null) MemoryClockOffset = decimal.Parse(parsedValue);
-            }
-        }
-
-        public bool UsesMemoryClockOffset => memoryClockOffset.HasValue;
-
-        [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(UsesPowerTarget))]
-        [NotifyPropertyChangedFor(nameof(PowerTargetDisplayValue))]
-        [NotifyPropertyChangedFor(nameof(PowerTargetDisplayString))]
-        private decimal? powerTarget;
-
-        public decimal PowerTargetDisplayValue
-        {
-            get => powerTarget ?? 0;
-            set => PowerTarget = value;
-        }
-
-        public string? PowerTargetDisplayString
-        {
-            get => GetDisplayString(powerTarget, "%", false);
-            set
-            {
-                var parsedValue = ParseDisplayString(value);
-                if (parsedValue != null) PowerTarget = decimal.Parse(parsedValue);
-            }
-        }
-
-        public bool UsesPowerTarget => powerTarget.HasValue;
-
-
-        public bool IsStock => coreClockOffset == 0 && memoryClockOffset == 0 && powerTarget == 100;
+        public bool IsStock => CoreOffset.Value == 0 && MemoryOffset.Value == 0 && PowerTarget.Value == 100;
 
         public GpuOverclock AsModelObject => new GpuOverclock()
         {
             GpuId = GpuId,
-            CoreClockOffset = coreClockOffset,
-            MemoryClockOffset = memoryClockOffset,
-            PowerTarget = powerTarget
+            CoreClockOffset = CoreOffset.Value,
+            MemoryClockOffset = MemoryOffset.Value,
+            PowerTarget = PowerTarget.Value
         };
     }
 }
