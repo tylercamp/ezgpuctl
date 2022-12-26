@@ -186,6 +186,9 @@ namespace GPUControl
         private List<IGpuWrapper> _gpus;
         private Settings _settings;
 
+        private List<string> _appliedProfileNames = new List<string>();
+        private List<string> _appliedPolicyNames = new List<string>();
+
         public MainWindow()
         {
             IGpuWrapper.InitializeAll();
@@ -200,6 +203,8 @@ namespace GPUControl
             OverclockManager.Start(_gpus);
             if (this._settings.PauseOcService) OverclockManager.Pause();
             else OverclockManager.Resume();
+
+            OverclockManager.BehaviorApplied += OverclockManager_BehaviorApplied;
 
             ApplyOcMode(this._settings.OcMode, this._settings.OcMode switch
             {
@@ -243,6 +248,42 @@ namespace GPUControl
             ).Start();
         }
 
+        private void ApplyOcSelectionStyles()
+        {
+            foreach (var profile in ViewModel.Profiles)
+                profile.IsActive = _appliedProfileNames.Contains(profile.Name);
+
+            foreach (var policy in ViewModel.Policies)
+                policy.IsActive = _appliedPolicyNames.Contains(policy.Name);
+        }
+
+        private void OverclockManager_BehaviorApplied(Overclock.Result.IBehaviorResult obj)
+        {
+            Dispatcher.BeginInvoke(() =>
+            {
+                switch (obj)
+                {
+                    case Overclock.Result.ProfileResult profile:
+                        _appliedProfileNames = new List<string>() { profile.ProfileName };
+                        _appliedPolicyNames = new List<string>();
+                        break;
+
+                    case Overclock.Result.PoliciesResult policies:
+                        _appliedProfileNames = (
+                            from policyName in policies.AppliedPolicyNames
+                            join policy in ViewModel.Policies on policyName equals policy.Name
+                            from profile in policy.Profiles
+                            select profile.Name
+                        ).ToList();
+
+                        _appliedPolicyNames = policies.AppliedPolicyNames;
+                        break;
+                }
+
+                ApplyOcSelectionStyles();
+            });
+        }
+
         private void RefreshViewModel()
         {
             if (ViewModel != null)
@@ -257,6 +298,8 @@ namespace GPUControl
             vm.PolicyService.OcServiceStatusChanged += OnOcServiceStatusChanged;
             vm.PolicyService.OcModeChanged += OnOcModeChanged;
             vm.ExitRequested += OnCloseByContextMenu;
+
+            ApplyOcSelectionStyles();
         }
 
         private void UpdateOcServiceSettings(Settings.OcModeType targetMode)

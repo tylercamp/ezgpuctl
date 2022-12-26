@@ -22,17 +22,7 @@
         <ListView Grid.Row="1" ItemsSource="{Binding Profiles}" SelectedItem="{Binding SelectedProfile, Mode=TwoWay}">
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <Label Content="{Binding Label}">
-                        <Label.Style>
-                            <Style TargetType="Label">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding IsReadOnly}" Value="True">
-                                        <Setter Property="FontStyle" Value="Italic" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Label.Style>
-                    </Label>
+                    <Label Content="{Binding Label}" FontWeight="{Binding DisplayFontWeight}" FontStyle="{Binding DisplayFontStyle}" />
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>

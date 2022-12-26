@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace GPUControl.ViewModels
 {
-    public partial class GpuOverclockProfileViewModel : ObservableObject
+    public partial class GpuOverclockProfileViewModel : OcSelectableViewModel
     {
         // only for XAML preview
         public GpuOverclockProfileViewModel()
@@ -70,8 +70,6 @@ namespace GPUControl.ViewModels
 
             return new GpuOverclockProfileViewModel(profile, overclockVms);
         }
-
-        public bool IsReadOnly { get; private set; }
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(Label))]

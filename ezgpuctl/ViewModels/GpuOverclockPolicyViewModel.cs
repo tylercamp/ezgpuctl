@@ -12,7 +12,7 @@ using System.Windows.Controls;
 
 namespace GPUControl.ViewModels
 {
-    public partial class GpuOverclockPolicyViewModel : ObservableObject
+    public partial class GpuOverclockPolicyViewModel : OcSelectableViewModel
     {
         SettingsViewModel? parent;
 
@@ -79,18 +79,8 @@ namespace GPUControl.ViewModels
             return new GpuOverclockPolicyViewModel(policy, new List<GpuOverclockProfileViewModel>() { defaultProfile });
         }
 
-        public bool IsReadOnly { get; private set; }
-
         [ObservableProperty]
         private bool isSelectedSpecifically = false;
-
-        [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(DisplayFontWeight))]
-        private bool isActive;
-
-        public FontWeight DisplayFontWeight => IsActive ? FontWeights.Bold : FontWeights.Normal;
-
-        public FontStyle DisplayFontStyle => IsReadOnly ? FontStyles.Italic : FontStyles.Normal;
 
         [ObservableProperty]
         private string name;
