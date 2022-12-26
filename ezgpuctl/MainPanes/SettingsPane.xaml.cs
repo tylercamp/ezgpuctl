@@ -47,12 +47,14 @@ namespace GPUControl.MainPanes
 
         private void SpecificProfile_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            ViewModel.PolicyService.SetOcModeSpecificProfile.Execute(null);
+            if (ViewModel.PolicyService.IsOcModeSpecificProfile)
+                ViewModel.PolicyService.SetOcModeSpecificProfile.Execute(null);
         }
 
         private void SpecificPolicy_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            ViewModel.PolicyService.SetOcModeSpecificPolicy.Execute(null);
+            if (ViewModel.PolicyService.IsOcModeSpecificPolicy)
+                ViewModel.PolicyService.SetOcModeSpecificPolicy.Execute(null);
         }
 
         private void AskBeforeClose_Clicked(object sender, RoutedEventArgs e)
@@ -66,6 +68,14 @@ namespace GPUControl.MainPanes
         private void AboutButton_Click(object sender, RoutedEventArgs e)
         {
             new AboutWindow().ShowDialog();
+        }
+
+        private void StartMinimized_Click(object sender, RoutedEventArgs e)
+        {
+            _settings.HideOnStartup = ViewModel.StartMinimized;
+            _settings.Save();
+
+            _reloadViewModel();
         }
     }
 }

@@ -51,9 +51,9 @@ namespace GPUControl.Model
                 select profile
             ).ToList();
 
-        public bool HideOnStartup { get; set; }
+        public bool HideOnStartup { get; set; } = false;
 
-        public bool PauseOcService { get; set; }
+        public bool PauseOcService { get; set; } = false;
 
         public bool AskBeforeClose { get; set; } = true;
 
@@ -80,7 +80,7 @@ namespace GPUControl.Model
             foreach (var p in result.Policies)
             {
                 // remove duplicates and any profile names which do not exist
-                p.OrderedProfileNames = p.OrderedProfileNames.Where(n => result.Policies.Any(p => p.Name == n)).Distinct().ToList();
+                p.OrderedProfileNames = p.OrderedProfileNames.Where(n => result.Profiles.Any(p => p.Name == n)).Distinct().ToList();
             }
 
             if (result.OcMode_SpecificPolicyName != null && !result.Policies.Any(p => p.Name == result.OcMode_SpecificPolicyName))

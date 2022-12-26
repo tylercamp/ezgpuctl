@@ -53,6 +53,7 @@ namespace GPUControl
             Settings.Policies.CollectionChanged += Policies_CollectionChanged;
 
             AskBeforeClose = settings.AskBeforeClose;
+            StartMinimized = settings.HideOnStartup;
 
             #region Policy Organization Commands
             MovePolicyUp = new RelayCommand(
@@ -173,6 +174,9 @@ namespace GPUControl
         public AutoStart RunOnStartup { get; } = new AutoStart();
 
         [ObservableProperty]
+        private bool startMinimized;
+
+        [ObservableProperty]
         private bool askBeforeClose;
 
         #endregion
@@ -222,19 +226,10 @@ namespace GPUControl
                     layoutSerializer.Deserialize(reader);
             }
 
+            // yuck
             PoliciesPane.DataInit(_gpus, _settings, RefreshViewModel, UpdateOcServiceSettings);
             ProfilesPane.DataInit(_gpus, _settings, RefreshViewModel, UpdateOcServiceSettings);
             SettingsPane.DataInit(_gpus, _settings, RefreshViewModel);
-
-
-            //OverclockManager.PoliciesApplied += (policyNames) =>
-            //{
-            //    Dispatcher.BeginInvoke(() =>
-            //    {
-            //        foreach (var policy in ViewModel.Policies)
-            //            policy.IsActive = policyNames.Contains(policy.Name);
-            //    });
-            //};
             
             // refresh GPU status view
             new DispatcherTimer(
@@ -246,6 +241,12 @@ namespace GPUControl
                 },
                 dispatcher: this.Dispatcher
             ).Start();
+
+            if (_settings.HideOnStartup)
+            {
+                WindowState = WindowState.Minimized;
+                ShowInTaskbar = false;
+            }
         }
 
         private void ApplyOcSelectionStyles()
@@ -353,8 +354,6 @@ namespace GPUControl
             }
         }
 
-        // TODO - Invoke on profile / policy name change to propagate new name
-        //        to OC service
         private void OnOcModeChanged(Settings.OcModeType newMode, string? name)
         {
             ApplyOcMode(newMode, name);

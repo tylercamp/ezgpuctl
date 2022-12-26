@@ -53,6 +53,7 @@
         <Grid Grid.RowSpan="2" HorizontalAlignment="Right" Width="148" Height="71" VerticalAlignment="Top">
             <CheckBox IsChecked="{Binding RunOnStartup.IsEnabled, Mode=TwoWay}" Content="Run on Startup" Margin="0,7,10,0" HorizontalAlignment="Right" Width="111" Height="15" VerticalAlignment="Top"/>
             <CheckBox Content="Ask Before Close" Margin="0,27,10,0" VerticalAlignment="Top" HorizontalAlignment="Right" Width="111" IsChecked="{Binding AskBeforeClose}" Click="AskBeforeClose_Clicked"/>
+            <CheckBox IsChecked="{Binding StartMinimized}" Click="StartMinimized_Click" Content="Start Minimized" HorizontalAlignment="Right" Margin="0,47,10,0" VerticalAlignment="Top" Width="111"/>
         </Grid>
     </Grid>
 </UserControl>
