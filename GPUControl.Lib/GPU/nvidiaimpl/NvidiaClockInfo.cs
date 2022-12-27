@@ -27,8 +27,6 @@ namespace GPUControl.Lib.GPU.nvidiaimpl
         public decimal BoostCoreClockMhz => gpu.BoostClockFrequencies.GraphicsClock.Frequency / 1000;
         public decimal BoostMemoryClockMhz => gpu.BoostClockFrequencies.MemoryClock.Frequency / 1000;
 
-
-
         public ValueRange CoreClockOffsetRangeMhz
         {
             get

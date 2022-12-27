@@ -21,6 +21,8 @@
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
-        <controls:GpuStatusView Grid.Column="1" DataContext="{Binding SelectedGpu}" />
+        <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
+            <controls:GpuStatusView DataContext="{Binding SelectedGpu}" />
+        </ScrollViewer>
     </Grid>
 </UserControl>

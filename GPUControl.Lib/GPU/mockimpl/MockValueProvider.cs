@@ -19,5 +19,7 @@ namespace GPUControl.Lib.GPU.mockimpl
         private static Random Random = new Random();
 
         public decimal Value => Random.Next((int)minValue, (int)maxValue);
+
+        public static MockValueProvider Percent = new MockValueProvider(0, 100);
     }
 }

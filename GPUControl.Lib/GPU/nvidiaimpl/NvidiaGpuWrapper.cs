@@ -25,6 +25,8 @@ namespace GPUControl.Lib.GPU.nvidiaimpl
             Clocks = new NvidiaClockInfo(gpu);
             Power = new NvidiaPowerInfo(gpu);
             Temps = new NvidiaTempInfo(gpu);
+            Utilization = new NvidiaUtilizationInfo(gpu);
+            Device = new NvidiaDeviceInfo(gpu);
         }
 
         public override uint GpuId => gpu.GPUId;
@@ -32,8 +34,13 @@ namespace GPUControl.Lib.GPU.nvidiaimpl
         public override IClockInfo Clocks { get; }
         public override IPowerInfo Power { get; }
         public override ITempInfo Temps { get; }
+        public override IUtilizationInfo Utilization { get; }
+        public override IDeviceInfo Device { get; }
 
         public override string Label => $"{gpu.FullName} #{GpuId}";
+
+        public int NumDisplays => gpu.ActiveOutputs.Length;
+        public int NumDisplayDevices => gpu.GetDisplayDevices().Length;
 
         public override void ApplyOC(Model.GpuOverclock oc)
         {

@@ -38,7 +38,20 @@ namespace GPUControl.ViewModels
                     PowerTarget = gpu.Power.CurrentTargetPower,
                     CurrentPower = gpu.Power.CurrentPower,
                     TempTarget = gpu.Temps.CurrentTargetTemp,
-                    CurrentTemp = gpu.Temps.CurrentCoreTemp
+                    CurrentTemp = gpu.Temps.CurrentCoreTemp,
+                    CurrentPerformanceState = gpu.Utilization.CurrentPerformanceState,
+                    PerformanceLimit = gpu.Utilization.PerformanceLimit,
+                    BusUsagePercent = gpu.Utilization.BusUsagePercent,
+                    MemoryUsagePercent = gpu.Utilization.MemoryUsagePercent,
+                    GpuUsagePercent = gpu.Utilization.GpuUsagePercent,
+                    Architecture = gpu.Device.ArchitectureName,
+                    PciBusInfo = gpu.Device.PciBusInfo,
+                    BiosVersion = gpu.Device.BiosVersion,
+                    NumCores = gpu.Device.NumCores,
+                    NumRops = gpu.Device.NumRops,
+                    NumDisplays = gpu.Device.NumConnectedDisplays,
+                    NumDisplayConnections = gpu.Device.NumAvailableConnections,
+                    VramSizeMB = gpu.Device.VramSizeMB
                 };
 
                 OnPropertyChanged(nameof(State));
@@ -61,12 +74,33 @@ namespace GPUControl.ViewModels
             public decimal TempTarget { get; set; } = 70;
             public decimal CurrentTemp { get; set; } = 40;
 
+            public string CurrentPerformanceState { get; set; } = "P0";
+            public string PerformanceLimit { get; set; } = "None";
+            public uint BusUsagePercent { get; set; } = 50;
+            public uint MemoryUsagePercent { get; set; } = 20;
+            public uint GpuUsagePercent { get; set; } = 65;
+
+            public string Architecture { get; set; } = "GA104";
+            public string PciBusInfo { get; set; } = "PCI Slot 0";
+            public string BiosVersion { get; set; } = "abcdefg";
+            public int NumCores { get; set; } = 128;
+            public int NumRops { get; set; } = 8;
+            public int NumDisplays { get; set; } = 1;
+            public int NumDisplayConnections { get; set; } = 14;
+            public int VramSizeMB { get; set; } = 4096;
+
             public string CoreClockString => $"{CoreClock} MHz";
             public string CoreBaseClockString => $"{CoreBaseClock} MHz";
             public string MemoryClockString => $"{MemoryClock} MHz";
             public string MemoryBaseClockString => $"{MemoryBaseClock} MHz";
-            public string PowerTargetString => $"{CurrentPower}% / {PowerTarget}%";
+            public string PowerTargetString => $"{(int)CurrentPower}% / {PowerTarget}%";
             public string TempTargetString => $"{CurrentTemp}C / {TempTarget}C";
+
+            public string BusUsageString => $"{BusUsagePercent}%";
+            public string MemoryUsageString => $"{MemoryUsagePercent}%";
+            public string GpuUsageString => $"{GpuUsagePercent}%";
+
+            public string VramSizeString => $"{VramSizeMB} MB";
         }
     }
 }

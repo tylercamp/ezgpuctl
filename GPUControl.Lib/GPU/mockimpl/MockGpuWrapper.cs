@@ -17,6 +17,8 @@ namespace GPUControl.Lib.GPU.mockimpl
             Clocks = new MockClockInfo();
             Power = new MockPowerInfo();
             Temps = new MockTempInfo();
+            Utilization = new MockUtilizationInfo();
+            Device = new MockDeviceInfo();
         }
 
         public override IClockInfo Clocks { get; }
@@ -24,6 +26,9 @@ namespace GPUControl.Lib.GPU.mockimpl
         public override IPowerInfo Power { get; }
 
         public override ITempInfo Temps { get; }
+
+        public override IUtilizationInfo Utilization { get; }
+        public override IDeviceInfo Device { get; }
 
         public override uint GpuId { get; }
 

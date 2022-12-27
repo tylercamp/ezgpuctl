@@ -13,6 +13,8 @@ namespace GPUControl.Lib.GPU
         public abstract IClockInfo Clocks { get; }
         public abstract IPowerInfo Power { get; }
         public abstract ITempInfo Temps { get; }
+        public abstract IUtilizationInfo Utilization { get; }
+        public abstract IDeviceInfo Device { get; }
 
         public abstract uint GpuId { get; }
 
