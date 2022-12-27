@@ -76,6 +76,7 @@
             MenuActivation="RightClick"
             ContextMenu="{StaticResource TrayContextMenu}"
             TrayMouseDoubleClick="NotifyIcon_TrayMouseDoubleClick"
+            ToolTipText="{Binding OcStatusSummary}"
             />
         <xcad:DockingManager x:Name="DockManager">
             <xcad:LayoutRoot>

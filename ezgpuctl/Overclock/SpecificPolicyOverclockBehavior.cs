@@ -36,19 +36,19 @@ namespace GPUControl.Overclock
                 var ocs = profiles.SelectMany(p => p.OverclockSettings).ToList();
                 ocs.AddRange(gpus.Select(gpu => GpuOverclock.Stock(gpu.GpuId)));
 
-                var finalOcs = gpus.Select(gpu => GpuOverclock.Merge(gpu.GpuId, ocs));
+                var finalOcs = gpus.Select(gpu => GpuOverclock.Merge(gpu.GpuId, ocs)).ToList();
                 foreach (var oc in finalOcs)
                 {
                     var wrapper = gpus.Single(gpu => gpu.GpuId == oc.GpuId);
                     wrapper.ApplyOC(oc);
                 }
 
-                return new PoliciesResult(new List<string> { policy.Name });
+                return new PoliciesResult(finalOcs, new List<string> { policy.Name });
             }
             else
             {
                 logger.Warning("Unable to find policy with the name {0}", policyName);
-                return new PoliciesResult(new List<string>());
+                return new PoliciesResult(new List<GpuOverclock>(), new List<string>());
             }
         }
     }

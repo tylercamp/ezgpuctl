@@ -35,7 +35,7 @@ namespace GPUControl.Lib.Model
 
         public override string ToString()
         {
-            return $"GPU {GpuId}: CoreOffset: {CoreClockOffset}, MemoryOffset: {MemoryClockOffset}, PowerTarget: {PowerTarget}";
+            return $"GPU {GpuId}: Core Offset: {CoreClockOffset}, Mem Offset: {MemoryClockOffset}, Power: {PowerTarget}";
         }
     }
 }

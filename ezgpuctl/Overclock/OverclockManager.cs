@@ -35,6 +35,7 @@ namespace GPUControl.Overclock
 
         public static bool IsRunning => IsEnabled && !currentContext!.Paused;
 
+        public static IBehaviorResult? LastResult { get; private set; }
         public static IOverclockBehavior? CurrentBehavior { get; set; }
 
         public static void Start(List<IGpuWrapper> gpus)
@@ -57,6 +58,7 @@ namespace GPUControl.Overclock
                         catch (Exception ex) when (ex is OperationCanceledException) { }
                         catch (Exception ex)
                         {
+                            LastResult = null;
                             currentContext.Paused = true;
                             ManagerStateChanged?.Invoke();
                             UnexpectedError?.Invoke(ex);
@@ -65,6 +67,7 @@ namespace GPUControl.Overclock
                         if (task.IsCompletedSuccessfully)
                         {
                             var result = task.Result;
+                            LastResult = result;
                             BehaviorApplied?.Invoke(result);
                         }
                     }

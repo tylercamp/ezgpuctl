@@ -39,11 +39,11 @@ namespace GPUControl.Overclock
                     wrapper.ApplyOC(oc);
                 }
 
-                return new ProfileResult(profile.Name);
+                return new ProfileResult(finalOcs, profile.Name);
             }
             else
             {
-                return new PoliciesResult(new List<string>());
+                return new PoliciesResult(new List<GpuOverclock>(), new List<string>());
             }
         }
     }

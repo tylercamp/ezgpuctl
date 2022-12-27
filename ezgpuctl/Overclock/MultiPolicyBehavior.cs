@@ -50,7 +50,7 @@ namespace GPUControl.Overclock
                 wrapper.ApplyOC(oc);
             }
 
-            return new PoliciesResult(matchingPolicies.Select(p => p.Name).ToList());
+            return new PoliciesResult(finalOcs, matchingPolicies.Select(p => p.Name).ToList());
         }
     }
 }

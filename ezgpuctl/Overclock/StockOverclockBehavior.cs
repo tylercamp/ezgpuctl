@@ -14,12 +14,17 @@ namespace GPUControl.Overclock
     {
         public Task<IBehaviorResult> Apply(List<IGpuWrapper> gpus)
         {
-            foreach (var gpu in gpus)
-            {
-                gpu.ApplyOC(GpuOverclock.Stock(gpu.GpuId));
-            }
+            var policyNames = new List<string>() { GpuOverclockPolicyViewModel.DefaultName };
+            var overclocks = gpus
+                .Select(gpu =>
+                {
+                    var oc = GpuOverclock.Stock(gpu.GpuId);
+                    gpu.ApplyOC(oc);
+                    return oc;
+                })
+                .ToList();
 
-            return Task.FromResult<IBehaviorResult>(new PoliciesResult(new List<string>() { GpuOverclockPolicyViewModel.DefaultName }));
+            return Task.FromResult<IBehaviorResult>(new PoliciesResult(overclocks, policyNames));
         }
     }
 }

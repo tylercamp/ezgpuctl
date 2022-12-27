@@ -186,6 +186,9 @@ namespace GPUControl
         public bool CanEditPolicy => SelectedPolicy?.IsReadOnly == false;
         public bool CanRemovePolicy => SelectedPolicy?.IsReadOnly == false;
 
+        [ObservableProperty]
+        private string? ocStatusSummary;
+
         #region Settings
 
         public event Action SettingsDisplayChanged;
@@ -263,9 +266,17 @@ namespace GPUControl
 
             if (File.Exists("dock.xml"))
             {
-                XmlLayoutSerializer layoutSerializer = new XmlLayoutSerializer(DockManager);
-                using (var reader = new StreamReader("dock.xml"))
-                    layoutSerializer.Deserialize(reader);
+                try
+                {
+                    XmlLayoutSerializer layoutSerializer = new XmlLayoutSerializer(DockManager);
+                    using (var reader = new StreamReader("dock.xml"))
+                        layoutSerializer.Deserialize(reader);
+                }
+                catch (Exception ex)
+                {
+                    logger.Warning(ex, "An error occurred while loading previous dock state, resetting");
+                    File.Delete("dock.xml");
+                }
             }
 
             // yuck
@@ -322,6 +333,7 @@ namespace GPUControl
                         break;
                 }
 
+                ViewModel.OcStatusSummary = BuildOcStatusSummary();
                 ApplyOcSelectionStyles();
             });
         }
@@ -342,7 +354,7 @@ namespace GPUControl
             vm.PolicyService.OcModeChanged += OnOcModeChanged;
             vm.ExitRequested += OnCloseByContextMenu;
             vm.SettingsDisplayChanged += OnSettingsDisplayChanged;
-
+            vm.OcStatusSummary = BuildOcStatusSummary();
             ApplyOcSelectionStyles();
         }
 
@@ -410,6 +422,36 @@ namespace GPUControl
 
             _settings.Save();
             RefreshViewModel();
+        }
+
+        private string BuildOcStatusSummary()
+        {
+            if (!OverclockManager.IsRunning) return "OC service is not running - OCs are not being applied.";
+            else if (OverclockManager.CurrentBehavior == null) return "OC service is running but no behavior has been selected."; // shouldn't happen
+            else if (OverclockManager.LastResult == null) return "OC service is running but is still starting up.";
+
+            var resultLines = new List<string>();
+
+            string ocMode = OverclockManager.CurrentBehavior switch
+            {
+                MultiPolicyBehavior => "Policies",
+                StockOverclockBehavior => "Stock",
+                SpecificPolicyOverclockBehavior => "Specific Policy",
+                SpecificProfileOverclockBehavior => "Specific Profile",
+                _ => "Unknown"
+            };
+
+            resultLines.Add($"Mode: {ocMode}");
+
+            resultLines.Add("");
+
+            foreach (var oc in OverclockManager.LastResult.AppliedOverclocks)
+            {
+                resultLines.Add(oc.ToString());
+                resultLines.Add("");
+            }
+
+            return string.Join("\n", resultLines);
         }
 
         private void OnOcServiceStatusChanged(bool shouldResume)
