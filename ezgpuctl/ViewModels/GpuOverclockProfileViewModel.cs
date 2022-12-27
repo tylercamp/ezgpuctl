@@ -88,7 +88,7 @@ namespace GPUControl.ViewModels
                         {
                             if (oc.PowerTarget.HasValue) parts.Add($"power: {oc.PowerTarget.Value}%");
                             if (oc.CoreOffset.HasValue) parts.Add($"core: {oc.CoreOffset.Value}MHz");
-                            if (oc.CoreOffset.HasValue) parts.Add($"memory: {oc.MemoryOffset.Value}MHz");
+                            if (oc.MemoryOffset.HasValue) parts.Add($"memory: {oc.MemoryOffset.Value}MHz");
                         }
 
                         if (parts.Count > 0)
