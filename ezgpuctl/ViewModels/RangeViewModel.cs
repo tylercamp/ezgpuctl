@@ -75,6 +75,10 @@ namespace GPUControl.ViewModels
                     if (digits != null)
                         Value = decimal.Parse(digits);
                 }
+                else
+                {
+                    Value = null;
+                }
             }
         }
     }
