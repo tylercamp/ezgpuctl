@@ -296,8 +296,19 @@ namespace GPUControl
 
             if (_settings.HideOnStartup)
             {
-                WindowState = WindowState.Minimized;
-                ShowInTaskbar = false;
+                new DispatcherTimer(
+                    interval: TimeSpan.FromTicks(1),
+                    priority: DispatcherPriority.Normal,
+                    callback: (sender, e) =>
+                    {
+                        WindowState = WindowState.Minimized;
+                        ShowInTaskbar = false;
+
+                        var timer = (sender as DispatcherTimer)!;
+                        timer.Stop();
+                    },
+                    dispatcher: this.Dispatcher
+                ).Start();
             }
         }
 
