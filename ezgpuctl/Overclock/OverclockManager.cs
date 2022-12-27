@@ -29,6 +29,7 @@ namespace GPUControl.Overclock
 
         public static event Action<IBehaviorResult> BehaviorApplied;
         public static event Action ManagerStateChanged;
+        public static event Action<Exception> UnexpectedError;
 
         public static bool IsEnabled => currentContext != null;
 
@@ -53,10 +54,19 @@ namespace GPUControl.Overclock
                         var task = CurrentBehavior.Apply(gpus);
 
                         try { task.Wait(token); }
-                        catch { break; }
+                        catch (Exception ex) when (ex is OperationCanceledException) { }
+                        catch (Exception ex)
+                        {
+                            currentContext.Paused = true;
+                            ManagerStateChanged?.Invoke();
+                            UnexpectedError?.Invoke(ex);
+                        }
 
-                        var result = task.Result;
-                        BehaviorApplied?.Invoke(result);
+                        if (task.IsCompletedSuccessfully)
+                        {
+                            var result = task.Result;
+                            BehaviorApplied?.Invoke(result);
+                        }
                     }
 
                     try { Task.Delay(UpdateInterval, token).Wait(); }
@@ -70,12 +80,20 @@ namespace GPUControl.Overclock
 
         public static void Resume()
         {
-            if (currentContext != null) currentContext.Paused = false;
+            if (currentContext != null)
+            {
+                currentContext.Paused = false;
+                ManagerStateChanged?.Invoke();
+            }
         }
 
         public static void Pause()
         {
-            if (currentContext != null) currentContext.Paused = true;
+            if (currentContext != null)
+            {
+                currentContext.Paused = true;
+                ManagerStateChanged?.Invoke();
+            }
         }
 
         public static void Stop()

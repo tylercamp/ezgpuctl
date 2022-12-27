@@ -14,6 +14,16 @@
         StateChanged="Window_StateChanged">
     <Window.Resources>
         <ContextMenu x:Key="TrayContextMenu">
+            <MenuItem Header="Settings">
+                <MenuItem Header="Minimize On Start" IsChecked="{Binding StartMinimized}" Command="{Binding ToggleStartMinimized}" />
+                <MenuItem Header="Start With Windows" IsChecked="{Binding RunOnStartup.IsEnabled}" Command="{Binding ToggleRunOnStartup}" />
+                <MenuItem Header="Ask Before Close" IsChecked="{Binding AskBeforeClose}" Command="{Binding ToggleAskBeforeClose}" />
+            </MenuItem>
+            
+            <MenuItem Header="About" Command="{Binding ShowAboutWindow}" />
+
+            <Separator />
+
             <MenuItem Header="OC Mode" IsEnabled="False" FontWeight="Bold" />
             <MenuItem Header="Stock" IsCheckable="False" IsChecked="{Binding PolicyService.IsOcModeStock, Mode=OneWay}" Command="{Binding PolicyService.SetOcModeStock}" />
             <MenuItem Header="Policies" IsCheckable="False" IsChecked="{Binding PolicyService.IsOcModePolicies, Mode=OneWay}" Command="{Binding PolicyService.SetOcModePolicies}" />
@@ -83,11 +93,11 @@
                         </xcad:LayoutAnchorablePane>
                     </xcad:LayoutPanel>
                     <xcad:LayoutPanel Orientation="Horizontal">
-                        <xcad:LayoutAnchorablePane>
+                        <!--<xcad:LayoutAnchorablePane>
                             <xcad:LayoutAnchorable Title="Settings" CanClose="False" CanHide="False" ContentId="OcStatusPane">
                                 <mpane:SettingsPane x:Name="SettingsPane" DataContext="{Binding Path=DataContext, RelativeSource={RelativeSource AncestorType=local:MainWindow}}" />
                             </xcad:LayoutAnchorable>
-                        </xcad:LayoutAnchorablePane>
+                        </xcad:LayoutAnchorablePane>-->
                         <xcad:LayoutAnchorablePane>
                             <xcad:LayoutAnchorable Title="GPU Status" CanClose="False" CanHide="False" ContentId="GpuStatusPane">
                                 <mpane:GpuStatusPane DataContext="{Binding Path=DataContext, RelativeSource={RelativeSource AncestorType=local:MainWindow}}" />

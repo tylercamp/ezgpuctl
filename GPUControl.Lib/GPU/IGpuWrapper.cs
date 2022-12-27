@@ -20,18 +20,38 @@ namespace GPUControl.Lib.GPU
 
         public abstract void ApplyOC(Model.GpuOverclock oc);
 
-
-
         public static bool UseMockGpus { get; set; } = false;
 
-        public static void InitializeAll()
+        public static bool InitializeAll(Action<Type, Exception> onException)
         {
-            NvidiaGpuWrapper.Initialize();
+            if (!UseMockGpus)
+            {
+                bool initializedAny = false;
+
+                try
+                {
+                    NvidiaGpuWrapper.Initialize();
+                    initializedAny = true;
+                }
+                catch (Exception e)
+                {
+                    onException(typeof(NvidiaGpuWrapper), e);
+                }
+
+                return initializedAny;
+            }
+            else
+            {
+                return true;
+            }
         }
 
         public static void UnloadAll()
         {
-            NvidiaGpuWrapper.Unload();
+            if (!UseMockGpus)
+            {
+                NvidiaGpuWrapper.Unload();
+            }
         }
 
         public static List<IGpuWrapper> ListAll()

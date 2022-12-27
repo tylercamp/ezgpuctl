@@ -6,6 +6,7 @@ using GPUControl.Model;
 using GPUControl.Overclock;
 using GPUControl.Util;
 using GPUControl.ViewModels;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -119,6 +120,25 @@ namespace GPUControl
             #endregion
 
             Exit = new RelayCommand(() => ExitRequested?.Invoke());
+
+            ToggleRunOnStartup = new RelayCommand(() =>
+            {
+                RunOnStartup.IsEnabled = !RunOnStartup.IsEnabled;
+            });
+
+            ToggleStartMinimized = new RelayCommand(() =>
+            {
+                StartMinimized = !StartMinimized;
+                SettingsDisplayChanged?.Invoke();
+            });
+
+            ToggleAskBeforeClose = new RelayCommand(() =>
+            {
+                AskBeforeClose = !AskBeforeClose;
+                SettingsDisplayChanged?.Invoke();
+            });
+
+            ShowAboutWindow = new RelayCommand(() => new AboutWindow().ShowDialog());
         }
 
         private void Policies_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -168,8 +188,16 @@ namespace GPUControl
 
         #region Settings
 
+        public event Action SettingsDisplayChanged;
+
         public event Action ExitRequested;
         public IRelayCommand Exit { get; }
+
+        public IRelayCommand ToggleRunOnStartup { get; }
+        public IRelayCommand ToggleStartMinimized { get; }
+        public IRelayCommand ToggleAskBeforeClose { get; }
+
+        public IRelayCommand ShowAboutWindow { get; }
 
         public AutoStart RunOnStartup { get; } = new AutoStart();
 
@@ -193,14 +221,28 @@ namespace GPUControl
         private List<string> _appliedProfileNames = new List<string>();
         private List<string> _appliedPolicyNames = new List<string>();
 
+        private ILogger logger = Log.ForContext<MainWindow>();
+
         public MainWindow()
         {
-            IGpuWrapper.InitializeAll();
+            bool initialized = IGpuWrapper.InitializeAll((type, ex) =>
+            {
+                logger.Warning(ex, "Error initializing {0}", type.FullName);
+            });
+
+            if (!initialized)
+            {
+                MessageBox.Show("Unable to initialize. See logs for more info.");
+                this.Close();
+                return;
+            }
 
             if (IGpuWrapper.UseMockGpus) _settings = Settings.LoadFrom("settings-mock.json");
             else _settings = Settings.LoadFrom("settings.json");
 
             this._gpus = IGpuWrapper.ListAll();
+            logger.Information("Found {0} GPUs", _gpus.Count);
+
             RefreshViewModel();
 
             ProcessMonitor.Start();
@@ -229,7 +271,6 @@ namespace GPUControl
             // yuck
             PoliciesPane.DataInit(_gpus, _settings, RefreshViewModel, UpdateOcServiceSettings);
             ProfilesPane.DataInit(_gpus, _settings, RefreshViewModel, UpdateOcServiceSettings);
-            SettingsPane.DataInit(_gpus, _settings, RefreshViewModel);
             
             // refresh GPU status view
             new DispatcherTimer(
@@ -292,6 +333,7 @@ namespace GPUControl
                 ViewModel.PolicyService.OcServiceStatusChanged -= OnOcServiceStatusChanged;
                 ViewModel.PolicyService.OcModeChanged -= OnOcModeChanged;
                 ViewModel.ExitRequested -= OnCloseByContextMenu;
+                ViewModel.SettingsDisplayChanged -= OnSettingsDisplayChanged;
             }
 
             var vm = new MainWindowViewModel(Dispatcher, _gpus, _settings);
@@ -299,8 +341,16 @@ namespace GPUControl
             vm.PolicyService.OcServiceStatusChanged += OnOcServiceStatusChanged;
             vm.PolicyService.OcModeChanged += OnOcModeChanged;
             vm.ExitRequested += OnCloseByContextMenu;
+            vm.SettingsDisplayChanged += OnSettingsDisplayChanged;
 
             ApplyOcSelectionStyles();
+        }
+
+        private void OnSettingsDisplayChanged()
+        {
+            _settings.AskBeforeClose = ViewModel.AskBeforeClose;
+            _settings.HideOnStartup = ViewModel.StartMinimized;
+            _settings.Save();
         }
 
         private void UpdateOcServiceSettings(Settings.OcModeType targetMode)
@@ -382,6 +432,8 @@ namespace GPUControl
         protected override void OnClosing(CancelEventArgs e)
         {
             base.OnClosing(e);
+
+            if (ViewModel == null) return;
 
             string closeMessage = "Are you sure you'd like to exit? GPU Control will no longer be applying OC settings.";
             if (_settings.AskBeforeClose && Xceed.Wpf.Toolkit.MessageBox.Show(closeMessage, "", MessageBoxButton.YesNo) != MessageBoxResult.Yes)

@@ -14,14 +14,29 @@ namespace GPUControl
     /// </summary>
     public partial class App : Application
     {
+        private static ILogger appLogger;
+
         protected override void OnStartup(StartupEventArgs e)
         {
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+
             Serilog.Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
                 .WriteTo.Debug()
+                .WriteTo.File("log.txt", Serilog.Events.LogEventLevel.Information)
                 .CreateLogger();
 
+            appLogger = Log.ForContext<App>();
+
             base.OnStartup(e);
+        }
+
+        private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            if (appLogger != null)
+            {
+                appLogger.Warning(e.ExceptionObject as Exception, "Uncaught exception");
+            }
         }
     }
 }
