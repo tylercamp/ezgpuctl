@@ -17,7 +17,5 @@ namespace GPUControl.Model
 
         public string Name { get; set; }
         public List<GpuOverclock> OverclockSettings { get; set; } = new List<GpuOverclock>();
-
-        public GpuOverclockProfile Clone() => new GpuOverclockProfile(Name) { OverclockSettings = OverclockSettings.Select(oc => oc.Clone()).ToList() };
     }
 }

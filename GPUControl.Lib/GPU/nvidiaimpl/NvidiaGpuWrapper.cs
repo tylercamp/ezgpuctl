@@ -27,6 +27,7 @@ namespace GPUControl.Lib.GPU.nvidiaimpl
             Temps = new NvidiaTempInfo(gpu);
             Utilization = new NvidiaUtilizationInfo(gpu);
             Device = new NvidiaDeviceInfo(gpu);
+            Fans = new NvidiaFanInfo(gpu);
         }
 
         public override uint GpuId => gpu.GPUId;
@@ -36,6 +37,7 @@ namespace GPUControl.Lib.GPU.nvidiaimpl
         public override ITempInfo Temps { get; }
         public override IUtilizationInfo Utilization { get; }
         public override IDeviceInfo Device { get; }
+        public override IFanInfo Fans { get; }
 
         public override string Label => $"{gpu.FullName} #{GpuId}";
 
@@ -82,6 +84,40 @@ namespace GPUControl.Lib.GPU.nvidiaimpl
             #region Voltage Control
 
             //GPUApi.SetCoreVoltageBoostPercent(vm._gpu.Handle, new PrivateVoltageBoostPercentV1);
+            #endregion
+
+            #region Fan Control
+            List<decimal?> effectiveFanSpeeds = new List<decimal?>(oc.FanSpeeds);
+            while (effectiveFanSpeeds.Count < Fans.FanSpeedsRpm.Count)
+                effectiveFanSpeeds.Add(null);
+
+            var coolers = (Fans as NvidiaFanInfo)!.CoolerInfo.ToList();
+            var newCoolersControl = new PrivateFanCoolersControlV1(
+                coolers.Zip(effectiveFanSpeeds).Select(pair =>
+                {
+                    var (cooler, speed) = pair;
+
+                    var mode = speed.HasValue ? NvAPIWrapper.Native.GPU.FanCoolersControlMode.Manual : NvAPIWrapper.Native.GPU.FanCoolersControlMode.Auto;
+                    return new PrivateFanCoolersControlV1.FanCoolersControlEntry((uint)cooler.CoolerId, mode);
+                }).ToArray()
+            );
+            GPUApi.SetClientFanCoolersControl(gpu.Handle, newCoolersControl);
+
+            foreach (var (cooler, speed) in coolers.Zip(effectiveFanSpeeds))
+            {
+                var level = speed.HasValue
+                    ? new PrivateCoolerLevelsV1.CoolerLevel(NvAPIWrapper.Native.GPU.CoolerPolicy.Manual, (uint)speed.Value)
+                    : new PrivateCoolerLevelsV1.CoolerLevel(NvAPIWrapper.Native.GPU.CoolerPolicy.None);
+
+                var levels = new PrivateCoolerLevelsV1(new[] { level });
+                try
+                {
+                    GPUApi.SetCoolerLevels(gpu.Handle, (uint)cooler.CoolerId, levels, 1);
+                }
+                // we're not always able to set fan speeds, but there's nothing we can check to figure that out. just swallow any exceptions
+                catch (Exception e) { }
+        }
+
             #endregion
         }
 

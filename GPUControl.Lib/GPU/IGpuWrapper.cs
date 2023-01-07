@@ -15,6 +15,7 @@ namespace GPUControl.Lib.GPU
         public abstract ITempInfo Temps { get; }
         public abstract IUtilizationInfo Utilization { get; }
         public abstract IDeviceInfo Device { get; }
+        public abstract IFanInfo Fans { get; }
 
         public abstract uint GpuId { get; }
 

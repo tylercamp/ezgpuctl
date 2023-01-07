@@ -13,11 +13,10 @@ namespace GPUControl.Lib.Model
         public decimal? CoreClockOffset { get; set; } = null;
         public decimal? MemoryClockOffset { get; set; } = null;
         public decimal? PowerTarget { get; set; } = null;
+        public List<decimal?> FanSpeeds { get; set; } = new List<decimal?>();
 
         [JsonIgnore]
-        public bool HasOcSettings => CoreClockOffset.HasValue || MemoryClockOffset.HasValue || PowerTarget.HasValue;
-
-        public GpuOverclock Clone() => new GpuOverclock() { GpuId = GpuId, CoreClockOffset = CoreClockOffset, MemoryClockOffset = MemoryClockOffset, PowerTarget = PowerTarget };
+        public bool HasOcSettings => CoreClockOffset.HasValue || MemoryClockOffset.HasValue || PowerTarget.HasValue || FanSpeeds.Any(s => s.HasValue);
 
         public static GpuOverclock Stock(uint gpuId) => new GpuOverclock { GpuId = gpuId, CoreClockOffset = 0, MemoryClockOffset = 0, PowerTarget = 100 };
 

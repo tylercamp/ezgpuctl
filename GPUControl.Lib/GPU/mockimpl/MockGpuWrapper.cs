@@ -19,6 +19,7 @@ namespace GPUControl.Lib.GPU.mockimpl
             Temps = new MockTempInfo();
             Utilization = new MockUtilizationInfo();
             Device = new MockDeviceInfo();
+            Fans = new MockFanInfo();
         }
 
         public override IClockInfo Clocks { get; }
@@ -29,6 +30,7 @@ namespace GPUControl.Lib.GPU.mockimpl
 
         public override IUtilizationInfo Utilization { get; }
         public override IDeviceInfo Device { get; }
+        public override IFanInfo Fans { get; }
 
         public override uint GpuId { get; }
 
