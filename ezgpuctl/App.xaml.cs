@@ -38,5 +38,7 @@ namespace GPUControl
                 appLogger.Warning(e.ExceptionObject as Exception, "Uncaught exception");
             }
         }
+
+        public static readonly string Version = "v1.0d-BETA";
     }
 }

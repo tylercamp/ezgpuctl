@@ -18,7 +18,7 @@ namespace GPUControl.Controls
 {
     public class AboutWindowViewModel
     {
-        public string Title => $"GPU Control {Assembly.GetExecutingAssembly().GetName().Version!}";
+        public string Title => $"GPU Control {App.Version}";
     }
 
     /// <summary>
