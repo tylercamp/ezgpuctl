@@ -21,6 +21,13 @@
             <controls:CollapsibleValueRangeSlider DataContext="{Binding PowerTarget}" />
             <controls:CollapsibleValueRangeSlider DataContext="{Binding CoreOffset}" />
             <controls:CollapsibleValueRangeSlider DataContext="{Binding MemoryOffset}" />
+            <ItemsControl ItemsSource="{Binding Fans}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="vms:GpuOverclockFanViewModel">
+                        <controls:CollapsibleValueRangeSlider DataContext="{Binding Range}" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
         </StackPanel>
     </Grid>
 </UserControl>
