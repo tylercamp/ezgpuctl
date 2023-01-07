@@ -21,7 +21,7 @@ namespace GPUControl
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 
             Serilog.Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Debug()
+                .MinimumLevel.Verbose()
                 .WriteTo.Debug()
                 .WriteTo.File("log.txt", Serilog.Events.LogEventLevel.Information)
                 .CreateLogger();

@@ -27,7 +27,7 @@ namespace GPUControl.ViewModels
             //    updateDispatcher.BeginInvoke(() => AppliedProfileNames = new ObservableCollection<string>(names));
             //};
 
-            OverclockManager.ManagerStateChanged += () => IsRunning = OverclockManager.IsRunning;
+            OverclockManager.ManagerStateChanged += OverclockManager_ManagerStateChanged;
 
             StartOcService = new RelayCommand(
                 () =>
@@ -36,7 +36,7 @@ namespace GPUControl.ViewModels
                     StartOcService!.NotifyCanExecuteChanged();
                     StopOcService!.NotifyCanExecuteChanged();
                 },
-                () => !OverclockManager.IsRunning
+                () => !IsRunning
             );
 
             StopOcService = new RelayCommand(
@@ -46,7 +46,7 @@ namespace GPUControl.ViewModels
                     StartOcService!.NotifyCanExecuteChanged();
                     StopOcService!.NotifyCanExecuteChanged();
                 },
-                () => OverclockManager.IsRunning
+                () => IsRunning
             );
 
             SetOcModePolicies = new RelayCommand(
@@ -74,10 +74,25 @@ namespace GPUControl.ViewModels
             );
         }
 
+        public void Dispose()
+        {
+            OverclockManager.ManagerStateChanged -= OverclockManager_ManagerStateChanged;
+        }
+
+        private void OverclockManager_ManagerStateChanged()
+        {
+            updateDispatcher.BeginInvoke(() =>
+            {
+                IsRunning = OverclockManager.IsRunning;
+            });
+        }
+
         [ObservableProperty]
         private ObservableCollection<string> appliedProfileNames = new ObservableCollection<string>();
 
         [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(StartOcService))]
+        [NotifyCanExecuteChangedFor(nameof(StopOcService))]
         private bool isRunning = false;
 
         // bool = should resume

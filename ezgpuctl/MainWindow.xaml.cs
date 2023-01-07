@@ -248,12 +248,13 @@ namespace GPUControl
 
             RefreshViewModel();
 
+            OverclockManager.BehaviorApplied += OverclockManager_BehaviorApplied;
+            OverclockManager.UnexpectedError += OverclockManager_UnexpectedError;
+
             ProcessMonitor.Start();
             OverclockManager.Start(_gpus);
             if (this._settings.PauseOcService) OverclockManager.Pause();
             else OverclockManager.Resume();
-
-            OverclockManager.BehaviorApplied += OverclockManager_BehaviorApplied;
 
             ApplyOcMode(this._settings.OcMode, this._settings.OcMode switch
             {
@@ -312,6 +313,11 @@ namespace GPUControl
             }
         }
 
+        private void OverclockManager_UnexpectedError(Exception obj)
+        {
+            MessageBox.Show("An error occurred while applying overclocks. OC service has been paused.");
+        }
+
         private void ApplyOcSelectionStyles()
         {
             foreach (var profile in ViewModel.Profiles)
@@ -351,12 +357,16 @@ namespace GPUControl
 
         private void RefreshViewModel()
         {
+            logger.Verbose("Refreshing MainWindowViewModel");
+
             if (ViewModel != null)
             {
                 ViewModel.PolicyService.OcServiceStatusChanged -= OnOcServiceStatusChanged;
                 ViewModel.PolicyService.OcModeChanged -= OnOcModeChanged;
                 ViewModel.ExitRequested -= OnCloseByContextMenu;
                 ViewModel.SettingsDisplayChanged -= OnSettingsDisplayChanged;
+
+                ViewModel.PolicyService.Dispose();
             }
 
             var vm = new MainWindowViewModel(Dispatcher, _gpus, _settings);
