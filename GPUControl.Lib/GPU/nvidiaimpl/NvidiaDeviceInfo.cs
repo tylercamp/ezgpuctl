@@ -33,9 +33,25 @@ namespace GPUControl.Lib.GPU.nvidiaimpl
 
         public int NumRops => gpu.ArchitectInformation.NumberOfROPs;
 
-        public int NumConnectedDisplays => gpu.ActiveOutputs.Length;
+        // display-related queries seem to throw an exception when displays are being attached/removed
 
-        public int NumAvailableConnections => gpu.GetDisplayDevices().Length;
+        public int NumConnectedDisplays
+        {
+            get
+            {
+                try { return gpu.ActiveOutputs.Length; }
+                catch { return 0; }
+            }
+        }
+
+        public int NumAvailableConnections
+        {
+            get
+            {
+                try { return gpu.GetDisplayDevices().Length; }
+                catch { return 0; }
+            }
+        }
 
         public int VramSizeMB => gpu.MemoryInformation.PhysicalFrameBufferSizeInkB / 1024;
     }
