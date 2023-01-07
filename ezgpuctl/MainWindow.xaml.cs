@@ -315,6 +315,7 @@ namespace GPUControl
 
         private void OverclockManager_UnexpectedError(Exception obj)
         {
+            logger.Error(obj, "Exception while applying overclocks");
             MessageBox.Show("An error occurred while applying overclocks. OC service has been paused.");
         }
 
