@@ -87,23 +87,23 @@ namespace GPUControl.Lib.GPU.nvidiaimpl
             #endregion
 
             #region Fan Control
+            var fans = Fans.Entries;
             List<decimal?> effectiveFanSpeeds = new List<decimal?>(oc.FanSpeeds);
-            while (effectiveFanSpeeds.Count < Fans.FanSpeedsRpm.Count)
+            while (effectiveFanSpeeds.Count < fans.Count)
                 effectiveFanSpeeds.Add(null);
 
-            var coolers = (Fans as NvidiaFanInfo)!.CoolerInfo.ToList();
             var newCoolersControl = new PrivateFanCoolersControlV1(
-                coolers.Zip(effectiveFanSpeeds).Select(pair =>
+                fans.Zip(effectiveFanSpeeds).Select(pair =>
                 {
                     var (cooler, speed) = pair;
 
                     var mode = speed.HasValue ? NvAPIWrapper.Native.GPU.FanCoolersControlMode.Manual : NvAPIWrapper.Native.GPU.FanCoolersControlMode.Auto;
-                    return new PrivateFanCoolersControlV1.FanCoolersControlEntry((uint)cooler.CoolerId, mode);
+                    return new PrivateFanCoolersControlV1.FanCoolersControlEntry((uint)cooler.Id, mode);
                 }).ToArray()
             );
             GPUApi.SetClientFanCoolersControl(gpu.Handle, newCoolersControl);
 
-            foreach (var (cooler, speed) in coolers.Zip(effectiveFanSpeeds))
+            foreach (var (cooler, speed) in fans.Zip(effectiveFanSpeeds))
             {
                 var level = speed.HasValue
                     ? new PrivateCoolerLevelsV1.CoolerLevel(NvAPIWrapper.Native.GPU.CoolerPolicy.Manual, (uint)speed.Value)
@@ -112,7 +112,7 @@ namespace GPUControl.Lib.GPU.nvidiaimpl
                 var levels = new PrivateCoolerLevelsV1(new[] { level });
                 try
                 {
-                    GPUApi.SetCoolerLevels(gpu.Handle, (uint)cooler.CoolerId, levels, 1);
+                    GPUApi.SetCoolerLevels(gpu.Handle, (uint)cooler.Id, levels, 1);
                 }
                 // we're not always able to set fan speeds, but there's nothing we can check to figure that out. just swallow any exceptions
                 catch (Exception e) { }

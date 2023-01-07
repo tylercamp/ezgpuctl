@@ -8,9 +8,21 @@ namespace GPUControl.Lib.GPU.mockimpl
 {
     public class MockFanInfo : IFanInfo
     {
-        public List<decimal> FanSpeedsPercent => new List<decimal> { MockValueProvider.Percent.Value };
+        public List<IFanInfoEntry> Entries => new List<IFanInfoEntry>() { new MockFanInfoEntry(1) };
+    }
+
+    public class MockFanInfoEntry : IFanInfoEntry
+    {
+        public MockFanInfoEntry(int id)
+        {
+            Id = id;
+        }
+
+        public decimal FanSpeedPercent => MockValueProvider.Percent.Value;
 
         private MockValueProvider rpmProvider = new MockValueProvider(500, 3000);
-        public List<decimal> FanSpeedsRpm => new List<decimal> { rpmProvider.Value };
+        public decimal FanSpeedRpm => rpmProvider.Value;
+
+        public int Id { get; }
     }
 }

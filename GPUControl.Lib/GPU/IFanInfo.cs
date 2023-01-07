@@ -8,7 +8,13 @@ namespace GPUControl.Lib.GPU
 {
     public interface IFanInfo
     {
-        List<decimal> FanSpeedsPercent { get; }
-        List<decimal> FanSpeedsRpm { get; }
+        List<IFanInfoEntry> Entries { get; }
+    }
+
+    public interface IFanInfoEntry
+    {
+        int Id { get; }
+        decimal FanSpeedPercent { get; }
+        decimal FanSpeedRpm { get; }
     }
 }

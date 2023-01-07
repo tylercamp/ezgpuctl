@@ -18,8 +18,22 @@ namespace GPUControl.Lib.GPU.nvidiaimpl
 
         internal IEnumerable<GPUCooler> CoolerInfo => _gpu.CoolerInformation.Coolers.Where(c => c.CoolerType == NvAPIWrapper.Native.GPU.CoolerType.Fan);
 
-        public List<decimal> FanSpeedsPercent => CoolerInfo.Select(c => (decimal)c.CurrentLevel).ToList();
+        public List<IFanInfoEntry> Entries => CoolerInfo.Select(i => (IFanInfoEntry)new NvidiaFanInfoEntry(i)).ToList();
+    }
 
-        public List<decimal> FanSpeedsRpm => CoolerInfo.Select(c => (decimal)c.CurrentFanSpeedInRPM).ToList();
+    public class NvidiaFanInfoEntry : IFanInfoEntry
+    {
+        GPUCooler cooler;
+
+        public NvidiaFanInfoEntry(GPUCooler cooler)
+        {
+            this.cooler = cooler;
+        }
+
+        public decimal FanSpeedPercent => cooler.CurrentLevel;
+
+        public decimal FanSpeedRpm => cooler.CurrentFanSpeedInRPM;
+
+        public int Id => cooler.CoolerId;
     }
 }

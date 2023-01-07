@@ -53,7 +53,7 @@ namespace GPUControl.ViewModels
                     NumDisplays = gpu.Device.NumConnectedDisplays,
                     NumDisplayConnections = gpu.Device.NumAvailableConnections,
                     VramSizeMB = gpu.Device.VramSizeMB,
-                    FanSpeeds = gpu.Fans.FanSpeedsPercent.Zip(gpu.Fans.FanSpeedsRpm).Select((pair, idx) => new StateData.FanInfo() { FanPercent = (int)pair.First, FanRpm = (int)pair.Second, Index = idx }).ToList()
+                    FanSpeeds = gpu.Fans.Entries.Select((info) => new StateData.FanInfo(info)).ToList()
                 };
 
                 OnPropertyChanged(nameof(State));
@@ -93,6 +93,14 @@ namespace GPUControl.ViewModels
 
             public class FanInfo
             {
+                public FanInfo() { }
+                public FanInfo(IFanInfoEntry entry)
+                {
+                    Index = entry.Id;
+                    FanPercent = (int)entry.FanSpeedPercent;
+                    FanRpm = (int)entry.FanSpeedRpm;
+                }
+
                 public int Index { get; set; }
                 public int FanPercent { get; set; }
                 public int FanRpm { get; set; }
