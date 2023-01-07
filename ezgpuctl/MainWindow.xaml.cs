@@ -298,7 +298,7 @@ namespace GPUControl
             if (_settings.HideOnStartup)
             {
                 new DispatcherTimer(
-                    interval: TimeSpan.FromTicks(1),
+                    interval: TimeSpan.FromSeconds(1),
                     priority: DispatcherPriority.Normal,
                     callback: (sender, e) =>
                     {
