@@ -255,6 +255,8 @@ namespace GPUControl
                 {
                     Environment.Exit(1);
                 }
+
+                MessageBox.Show("Settings for this app can be found by right-clicking its icon in the System Tray.", "Notice");
             }
 
             _settings.Save();
