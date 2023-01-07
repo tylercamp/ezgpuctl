@@ -243,6 +243,22 @@ namespace GPUControl
             if (IGpuWrapper.UseMockGpus) _settings = Settings.LoadFrom("settings-mock.json");
             else _settings = Settings.LoadFrom("settings.json");
 
+            if (_settings.IsFirstRun)
+            {
+                string warningMessage =
+                    "Overclocking can permanently damage your hardware. " +
+                    "The author(s) of this app and its dependencies hold no responsibility or liability for any damages resulting from its use." +
+                    "\n\n" +
+                    "Do you agree to these terms?";
+
+                if (MessageBox.Show(warningMessage, "Warning!", MessageBoxButton.YesNo) != MessageBoxResult.Yes)
+                {
+                    Environment.Exit(1);
+                }
+            }
+
+            _settings.Save();
+
             this._gpus = IGpuWrapper.ListAll();
             logger.Information("Found {0} GPUs", _gpus.Count);
 

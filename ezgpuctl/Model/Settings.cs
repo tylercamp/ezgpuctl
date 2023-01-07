@@ -15,11 +15,14 @@ namespace GPUControl.Model
     {
         private Settings()
         {
+            IsFirstRun = false;
         }
 
         public Settings(string? path)
         {
             Path = path;
+            // newtonsoft seems to call this ctor with `null`
+            IsFirstRun = path != null;
         }
 
         public enum OcModeType
@@ -56,6 +59,9 @@ namespace GPUControl.Model
         public bool PauseOcService { get; set; } = false;
 
         public bool AskBeforeClose { get; set; } = true;
+
+        [JsonIgnore]
+        public bool IsFirstRun { get; }
 
         public void Save()
         {
