@@ -23,11 +23,17 @@ namespace GPUControl.Lib.Model
         public static GpuOverclock Merge(uint gpuId, IEnumerable<GpuOverclock> ocsByPriority)
         {
             var result = new GpuOverclock() { GpuId = gpuId };
+
             foreach (var oc in ocsByPriority.Reverse().Where(oc => oc.GpuId == gpuId))
             {
                 result.CoreClockOffset = oc.CoreClockOffset ?? result.CoreClockOffset;
                 result.MemoryClockOffset = oc.MemoryClockOffset ?? result.MemoryClockOffset;
                 result.PowerTarget = oc.PowerTarget ?? result.PowerTarget;
+
+                while (result.FanSpeeds.Count < oc.FanSpeeds.Count) result.FanSpeeds.Add(null);
+
+                for (int i = 0; i < result.FanSpeeds.Count && i < oc.FanSpeeds.Count; i++)
+                    result.FanSpeeds[i] = oc.FanSpeeds[i] ?? result.FanSpeeds[i];
             }
             return result;
         }
