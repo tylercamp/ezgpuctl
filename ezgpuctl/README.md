@@ -12,6 +12,8 @@ There isn't a strict methodology for when MVVM was/wasn't applied. I used it whe
 with WPF, and broke from the pattern for those non-trivial cases. Most uses of `ObservableCollection` can
 be replaced with `List` without breaking anything.
 
+Most, if not all, of the items under the `Control` namespace do follow MVVM as expected.
+
 For things like the MainWindow where no model-based view-model was appropriate, I added a control-specific
 view-model definition above the view class.
 
@@ -22,7 +24,7 @@ Modal windows and sub-controls are in this project under `Controls`.
 I used the MVVM utilities from Microsoft Community Toolkit to reduce boilerplate. Namely, extending
 from `ObservableObject` for implementing `INotifyPropertyChanged`, decorating private fields with
 `[ObservableProperty]` to auto-gen the appropriate getters/setters, and similar `[NotifyPropertyChangedFor]`
-and `NotifyCanExecuteChangedFor` to further propagate changes to other properties.
+and `[NotifyCanExecuteChangedFor]` to further propagate changes to other properties.
 
 I used AvalonDock to allow hiding/rearranging views since I'm not a UI designer and have no clue what
 a good layout would look like for this.
