@@ -73,7 +73,24 @@
                     </StackPanel>
                 </Grid>
             </GroupBox>
-            <GroupBox Header="Utilization" MinWidth="180">
+            <GroupBox Header="Fans" Visibility="{Binding State.FansVisibility}" MinWidth="160">
+                <ItemsControl ItemsSource="{Binding State.FanSpeeds}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="vm:GpuStatusViewModel.StateData.FanInfo">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock FontWeight="Bold" Grid.Column="0" Text="{Binding Label}" />
+                                <TextBlock HorizontalAlignment="Right" Grid.Column="1" Text="{Binding Value}" />
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </GroupBox>
+            <GroupBox Header="Utilization" MinWidth="220">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -88,11 +105,11 @@
                         <TextBlock FontWeight="Bold">Bus Usage</TextBlock>
                     </StackPanel>
                     <StackPanel Grid.Column="1" Margin="5,0,0,0" HorizontalAlignment="Right">
-                        <TextBlock Text="{Binding State.CurrentPerformanceState}" />
-                        <TextBlock Text="{Binding State.PerformanceLimit}" />
-                        <TextBlock Text="{Binding State.GpuUsageString}" />
-                        <TextBlock Text="{Binding State.MemoryUsageString}" />
-                        <TextBlock Text="{Binding State.BusUsageString}" />
+                        <TextBlock HorizontalAlignment="Right" Text="{Binding State.CurrentPerformanceState}" />
+                        <TextBlock HorizontalAlignment="Right" Text="{Binding State.PerformanceLimit}" />
+                        <TextBlock HorizontalAlignment="Right" Text="{Binding State.GpuUsageString}" />
+                        <TextBlock HorizontalAlignment="Right" Text="{Binding State.MemoryUsageString}" />
+                        <TextBlock HorizontalAlignment="Right" Text="{Binding State.BusUsageString}" />
                     </StackPanel>
                 </Grid>
             </GroupBox>

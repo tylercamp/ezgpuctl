@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace GPUControl.ViewModels
 {
@@ -51,7 +52,8 @@ namespace GPUControl.ViewModels
                     NumRops = gpu.Device.NumRops,
                     NumDisplays = gpu.Device.NumConnectedDisplays,
                     NumDisplayConnections = gpu.Device.NumAvailableConnections,
-                    VramSizeMB = gpu.Device.VramSizeMB
+                    VramSizeMB = gpu.Device.VramSizeMB,
+                    FanSpeeds = gpu.Fans.FanSpeedsPercent.Zip(gpu.Fans.FanSpeedsRpm).Select((pair, idx) => new StateData.FanInfo() { FanPercent = (int)pair.First, FanRpm = (int)pair.Second, Index = idx }).ToList()
                 };
 
                 OnPropertyChanged(nameof(State));
@@ -88,6 +90,20 @@ namespace GPUControl.ViewModels
             public int NumDisplays { get; set; } = 1;
             public int NumDisplayConnections { get; set; } = 14;
             public int VramSizeMB { get; set; } = 4096;
+
+            public class FanInfo
+            {
+                public int Index { get; set; }
+                public int FanPercent { get; set; }
+                public int FanRpm { get; set; }
+
+                public string Label => $"Fan #{Index}";
+                public string Value => $"{FanPercent}%, {FanRpm} RPM";
+            }
+
+            public List<FanInfo> FanSpeeds { get; set; } = new List<FanInfo> { new FanInfo { Index = 0, FanPercent = 50, FanRpm = 1200 } };
+
+            public Visibility FansVisibility => FanSpeeds.Any() ? Visibility.Visible : Visibility.Hidden;
 
             public string CoreClockString => $"{CoreClock} MHz";
             public string CoreBaseClockString => $"{CoreBaseClock} MHz";
