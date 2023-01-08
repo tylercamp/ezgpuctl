@@ -22,11 +22,6 @@ namespace GPUControl.ViewModels
             this.updateDispatcher = updateDispatcher;
             this.parent = parent;
 
-            //OverclockManager.PoliciesApplied += (names) =>
-            //{
-            //    updateDispatcher.BeginInvoke(() => AppliedProfileNames = new ObservableCollection<string>(names));
-            //};
-
             OverclockManager.ManagerStateChanged += OverclockManager_ManagerStateChanged;
 
             isRunning = OverclockManager.IsRunning;
@@ -88,9 +83,6 @@ namespace GPUControl.ViewModels
                 IsRunning = OverclockManager.IsRunning;
             });
         }
-
-        [ObservableProperty]
-        private ObservableCollection<string> appliedProfileNames = new ObservableCollection<string>();
 
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(StartOcService))]
