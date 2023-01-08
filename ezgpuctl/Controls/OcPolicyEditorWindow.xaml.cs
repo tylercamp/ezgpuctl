@@ -44,44 +44,6 @@ namespace GPUControl.Controls
                 AvailableProgramNames = new List<string>();
             }
 
-            void MoveProfileRelative(int pos)
-            {
-                var profile = SelectedProfile!;
-                var profileIdx = Policy.Profiles.IndexOf(profile);
-
-                Policy.Profiles.Move(profileIdx, profileIdx + pos);
-                SelectedProfile = profile;
-            }
-
-            void MoveProfileAbsolute(int pos)
-            {
-                var profile = SelectedProfile!;
-                var profileIdx = Policy.Profiles.IndexOf(profile);
-
-                Policy.Profiles.Move(profileIdx, pos);
-                SelectedProfile = profile;
-            }
-
-            MoveProfileUp = new RelayCommand(
-                () => MoveProfileRelative(-1),
-                () => !Policy.IsReadOnly && SelectedProfile != null && Policy.Profiles.IndexOf(SelectedProfile) > 0
-            );
-
-            MoveProfileDown = new RelayCommand(
-                () => MoveProfileRelative(1),
-                () => !Policy.IsReadOnly && SelectedProfile != null && Policy.Profiles.IndexOf(SelectedProfile) < Policy.Profiles.Count - 1
-            );
-
-            MoveProfileTop = new RelayCommand(
-                () => MoveProfileAbsolute(0),
-                () => !Policy.IsReadOnly && SelectedProfile != null && Policy.Profiles.IndexOf(SelectedProfile) != 0
-            );
-
-            MoveProfileBottom = new RelayCommand(
-                () => MoveProfileAbsolute(Policy.Profiles.Count - 1),
-                () => !Policy.IsReadOnly && SelectedProfile != null && Policy.Profiles.IndexOf(SelectedProfile) != Policy.Profiles.Count - 1
-            );
-
             RemoveProfile = new RelayCommand(
                 () => { Policy.Profiles.Remove(SelectedProfile!); SelectedProfile = null; },
                 () => SelectedProfile != null
@@ -93,21 +55,12 @@ namespace GPUControl.Controls
             );
         }
 
-        public IRelayCommand MoveProfileUp { get; }
-        public IRelayCommand MoveProfileDown { get; }
-        public IRelayCommand MoveProfileTop { get; }
-        public IRelayCommand MoveProfileBottom { get; }
         public IRelayCommand RemoveProfile { get; }
         public IRelayCommand RemoveRule { get; }
         
 
         private void OnPolicyProfilesChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
-            MoveProfileUp.NotifyCanExecuteChanged();
-            MoveProfileDown.NotifyCanExecuteChanged();
-            MoveProfileTop.NotifyCanExecuteChanged();
-            MoveProfileBottom.NotifyCanExecuteChanged();
-
             if (Policy.Profiles.Count == 0)
             {
                 SelectedProfile = null;
@@ -133,10 +86,6 @@ namespace GPUControl.Controls
         public GpuOverclockPolicyViewModel Policy { get; }
 
         [ObservableProperty]
-        [NotifyCanExecuteChangedFor(nameof(MoveProfileUp))]
-        [NotifyCanExecuteChangedFor(nameof(MoveProfileDown))]
-        [NotifyCanExecuteChangedFor(nameof(MoveProfileTop))]
-        [NotifyCanExecuteChangedFor(nameof(MoveProfileBottom))]
         [NotifyCanExecuteChangedFor(nameof(RemoveProfile))]
         private GpuOverclockProfileViewModel? selectedProfile = null;
 
