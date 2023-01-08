@@ -6,10 +6,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Threading;
+using static System.Windows.Forms.AxHost;
 
 namespace GPUControl.ViewModels
 {
-    public class GpuStatusViewModel : ObservableObject
+    public partial class GpuStatusViewModel : ObservableObject
     {
         private IGpuWrapper? gpu;
         
@@ -23,95 +25,192 @@ namespace GPUControl.ViewModels
             this.gpu = gpu;
 
             GpuName = this.gpu?.Label ?? "GPU Name";
-            UpdateState();
+            UpdateState(null);
         }
 
-        public void UpdateState()
+        private class DynamicStateSnapshot
         {
+            // (ew, state duplication)
+            public decimal CoreClock, MemoryClock, PowerTarget, CurrentPower, TempTarget, CurrentTemp;
+            public uint BusUsagePercent, MemoryUsagePercent, GpuUsagePercent;
+            public int NumDisplays, NumDisplayConnections;
+
+            public string PerformanceLimit, CurrentPerformanceState;
+
+            public List<StateData.FanInfo> Fans;
+        }
+
+        public void UpdateState(Dispatcher? dispatcher)
+        {
+            // pulling all the GPU info can be time consuming; put that data fetching on a background thread
+            // and then update UI via Dispatcher once that heavy work has been done.
+
             if (gpu != null)
             {
-                State = new StateData
+                State ??= new StateData
                 {
-                    CoreClock = gpu.Clocks.CurrentCoreClockMhz,
                     CoreBaseClock = gpu.Clocks.BaseCoreClockMhz,
-                    MemoryClock = gpu.Clocks.CurrentMemoryClockMhz,
                     MemoryBaseClock = gpu.Clocks.BaseMemoryClockMhz,
-                    PowerTarget = gpu.Power.CurrentTargetPower,
-                    CurrentPower = gpu.Power.CurrentPower,
-                    TempTarget = gpu.Temps.CurrentTargetTemp,
-                    CurrentTemp = gpu.Temps.CurrentCoreTemp,
-                    CurrentPerformanceState = gpu.Utilization.CurrentPerformanceState,
-                    PerformanceLimit = gpu.Utilization.PerformanceLimit,
-                    BusUsagePercent = gpu.Utilization.BusUsagePercent,
-                    MemoryUsagePercent = gpu.Utilization.MemoryUsagePercent,
-                    GpuUsagePercent = gpu.Utilization.GpuUsagePercent,
                     Architecture = gpu.Device.ArchitectureName,
                     PciBusInfo = gpu.Device.PciBusInfo,
                     BiosVersion = gpu.Device.BiosVersion,
                     NumCores = gpu.Device.NumCores,
                     NumRops = gpu.Device.NumRops,
-                    NumDisplays = gpu.Device.NumConnectedDisplays,
-                    NumDisplayConnections = gpu.Device.NumAvailableConnections,
                     VramSizeMB = gpu.Device.VramSizeMB,
-                    FanSpeeds = gpu.Fans.Entries.Select((info) => new StateData.FanInfo(info)).ToList()
+                    FanSpeeds = gpu.Fans.Entries.Select(info => new StateData.FanInfo(info)).ToList()
                 };
 
-                OnPropertyChanged(nameof(State));
+                Action<DynamicStateSnapshot> applyState = (snapshot) =>
+                {
+                    State.CoreClock = snapshot.CoreClock;
+                    State.MemoryClock = snapshot.MemoryClock;
+                    State.PowerTarget = snapshot.PowerTarget;
+                    State.CurrentPower = snapshot.CurrentPower;
+                    State.TempTarget = snapshot.TempTarget;
+                    State.CurrentTemp = snapshot.CurrentTemp;
+                    State.CurrentPerformanceState = snapshot.CurrentPerformanceState;
+                    State.PerformanceLimit = snapshot.PerformanceLimit;
+                    State.BusUsagePercent = snapshot.BusUsagePercent;
+                    State.MemoryUsagePercent = snapshot.MemoryUsagePercent;
+                    State.NumDisplays = snapshot.NumDisplays;
+                    State.NumDisplayConnections = snapshot.NumDisplayConnections;
+
+                    foreach (var fan in State.FanSpeeds)
+                    {
+                        var newData = snapshot.Fans.Single(f => f.Id == fan.Id);
+                        fan.FanPercent = newData.FanPercent;
+                        fan.FanRpm = newData.FanRpm;
+                    }
+                };
+
+                Func<DynamicStateSnapshot> buildSnapshot = () =>
+                {
+                    return new DynamicStateSnapshot()
+                    {
+                        CoreClock = gpu.Clocks.CurrentCoreClockMhz,
+                        MemoryClock = gpu.Clocks.CurrentMemoryClockMhz,
+                        PowerTarget = gpu.Power.CurrentTargetPower,
+                        CurrentPower = gpu.Power.CurrentPower,
+                        TempTarget = gpu.Temps.CurrentTargetTemp,
+                        CurrentTemp = gpu.Temps.CurrentCoreTemp,
+                        CurrentPerformanceState = gpu.Utilization.CurrentPerformanceState,
+                        PerformanceLimit = gpu.Utilization.PerformanceLimit,
+                        BusUsagePercent = gpu.Utilization.BusUsagePercent,
+                        MemoryUsagePercent = gpu.Utilization.MemoryUsagePercent,
+                        GpuUsagePercent = gpu.Utilization.GpuUsagePercent,
+                        NumDisplays = gpu.Device.NumConnectedDisplays,
+                        NumDisplayConnections = gpu.Device.NumAvailableConnections,
+                        Fans = gpu.Fans.Entries.Select(e => new StateData.FanInfo(e)).ToList()
+                    };
+                };
+
+                if (dispatcher == null)
+                {
+                    applyState(buildSnapshot());
+                }
+                else
+                {
+                    Task.Run(() =>
+                    {
+                        var snapshot = buildSnapshot();
+                        dispatcher.BeginInvoke(() => applyState(snapshot));
+                    });
+                }
             }
         }
 
-        public string GpuName { get; } = "GPU Name";
+        public string GpuName { get; }
 
-        public StateData State { get; private set; }
+        [ObservableProperty]
+        private StateData state;
 
-        public class StateData
+        public partial class StateData : ObservableObject
         {
-            public decimal CoreClock { get; set; } = 1200;
-            public decimal CoreBaseClock { get; set; } = 1000;
-            public decimal MemoryClock { get; set; } = 8000;
-            public decimal MemoryBaseClock { get; set; } = 7500;
+            [ObservableProperty]
+            [NotifyPropertyChangedFor(nameof(CoreClockString))]
+            private decimal coreClock = 1200;
+            [ObservableProperty]
+            [NotifyPropertyChangedFor(nameof(CoreBaseClockString))]
+            private decimal coreBaseClock = 1000;
+            [ObservableProperty]
+            [NotifyPropertyChangedFor(nameof(MemoryClockString))]
+            private decimal memoryClock = 8000;
+            [ObservableProperty]
+            [NotifyPropertyChangedFor(nameof(MemoryBaseClockString))]
+            private decimal memoryBaseClock = 7500;
 
-            public decimal PowerTarget { get; set; } = 100;
-            public decimal CurrentPower { get; set; } = 70;
-            public decimal TempTarget { get; set; } = 70;
-            public decimal CurrentTemp { get; set; } = 40;
+            [ObservableProperty]
+            [NotifyPropertyChangedFor(nameof(PowerTargetString))]
+            private decimal powerTarget = 100;
+            [ObservableProperty]
+            [NotifyPropertyChangedFor(nameof(PowerTargetString))]
+            private decimal currentPower = 70;
+            [ObservableProperty]
+            [NotifyPropertyChangedFor(nameof(TempTargetString))]
+            private decimal tempTarget = 70;
+            [ObservableProperty]
+            [NotifyPropertyChangedFor(nameof(TempTargetString))]
+            private decimal currentTemp = 40;
 
-            public string CurrentPerformanceState { get; set; } = "P0";
-            public string PerformanceLimit { get; set; } = "None";
-            public uint BusUsagePercent { get; set; } = 50;
-            public uint MemoryUsagePercent { get; set; } = 20;
-            public uint GpuUsagePercent { get; set; } = 65;
+            [ObservableProperty]
+            private string currentPerformanceState = "P0";
+            [ObservableProperty]
+            private string performanceLimit = "None";
+            [ObservableProperty]
+            [NotifyPropertyChangedFor(nameof(BusUsageString))]
+            private uint busUsagePercent = 50;
+            [ObservableProperty]
+            [NotifyPropertyChangedFor(nameof(MemoryUsageString))]
+            private uint memoryUsagePercent = 20;
+            [ObservableProperty]
+            [NotifyPropertyChangedFor(nameof(GpuUsageString))]
+            private uint gpuUsagePercent = 65;
 
-            public string Architecture { get; set; } = "GA104";
-            public string PciBusInfo { get; set; } = "PCI Slot 0";
-            public string BiosVersion { get; set; } = "abcdefg";
-            public int NumCores { get; set; } = 128;
-            public int NumRops { get; set; } = 8;
-            public int NumDisplays { get; set; } = 1;
-            public int NumDisplayConnections { get; set; } = 14;
-            public int VramSizeMB { get; set; } = 4096;
+            [ObservableProperty]
+            private string architecture = "GA104";
+            [ObservableProperty]
+            private string pciBusInfo = "PCI Slot 0";
+            [ObservableProperty]
+            private string biosVersion = "abcdefg";
+            [ObservableProperty]
+            private int numCores = 128;
+            [ObservableProperty]
+            private int numRops = 8;
+            [ObservableProperty]
+            private int numDisplays = 1;
+            [ObservableProperty]
+            private int numDisplayConnections = 14;
+            [ObservableProperty]
+            private int vramSizeMB = 4096;
 
-            public class FanInfo
+            public partial class FanInfo : ObservableObject
             {
                 public FanInfo() { }
                 public FanInfo(IFanInfoEntry entry)
                 {
-                    Index = entry.Id;
+                    Id = entry.Id;
                     FanPercent = (int)entry.FanSpeedPercent;
                     FanRpm = (int)entry.FanSpeedRpm;
                 }
 
-                public int Index { get; set; }
-                public int FanPercent { get; set; }
-                public int FanRpm { get; set; }
+                [ObservableProperty]
+                private int id = 0;
+                [ObservableProperty]
+                [NotifyPropertyChangedFor(nameof(Value))]
+                private int fanPercent = 50;
+                [ObservableProperty]
+                [NotifyPropertyChangedFor(nameof(Value))]
+                private int fanRpm = 1200;
 
-                public string Label => $"Fan #{Index}";
+                public string Label => $"Fan {Id}";
                 public string Value => $"{FanPercent}%, {FanRpm} RPM";
             }
 
-            public List<FanInfo> FanSpeeds { get; set; } = new List<FanInfo> { new FanInfo { Index = 0, FanPercent = 50, FanRpm = 1200 } };
+            [ObservableProperty]
+            [NotifyPropertyChangedFor(nameof(FansVisibility))]
+            private List<FanInfo> fanSpeeds = new List<FanInfo> { new FanInfo() };
 
-            public Visibility FansVisibility => FanSpeeds.Any() ? Visibility.Visible : Visibility.Hidden;
+            private Visibility FansVisibility => FanSpeeds.Any() ? Visibility.Visible : Visibility.Hidden;
 
             public string CoreClockString => $"{CoreClock} MHz";
             public string CoreBaseClockString => $"{CoreBaseClock} MHz";

@@ -226,7 +226,7 @@ namespace GPUControl
                 priority: DispatcherPriority.Normal,
                 callback: (sender, e) =>
                 {
-                    ViewModel.SelectedGpu.UpdateState();
+                    ViewModel.SelectedGpu.UpdateState(Dispatcher);
                 },
                 dispatcher: this.Dispatcher
             ).Start();
