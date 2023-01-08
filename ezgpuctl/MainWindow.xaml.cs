@@ -51,73 +51,8 @@ namespace GPUControl
             GpuStatuses = gpus.Select(gpu => new GpuStatusViewModel(gpu)).ToList();
             selectedGpu = GpuStatuses[0];
 
-            Settings.Policies.CollectionChanged += Policies_CollectionChanged;
-
             AskBeforeClose = settings.AskBeforeClose;
             StartMinimized = settings.HideOnStartup;
-
-            #region Policy Organization Commands
-            MovePolicyUp = new RelayCommand(
-                () =>
-                {
-                    var idx = Policies.IndexOf(SelectedPolicy);
-                    Policies.Move(idx, idx - 1);
-
-                    var modelCurrent = settings.Policies[idx];
-                    var modelOther = settings.Policies[idx - 1];
-
-                    settings.Policies[idx] = modelOther;
-                    settings.Policies[idx - 1] = modelCurrent;
-                    settings.Save();
-                },
-                () => SelectedPolicy?.IsReadOnly == false && Policies.IndexOf(SelectedPolicy) > 0
-            );
-
-            MovePolicyDown = new RelayCommand(
-                () =>
-                {
-                    var idx = Policies.IndexOf(SelectedPolicy);
-                    Policies.Move(idx, idx + 1);
-
-                    var modelCurrent = settings.Policies[idx];
-                    var modelOther = settings.Policies[idx + 1];
-
-                    settings.Policies[idx] = modelOther;
-                    settings.Policies[idx + 1] = modelCurrent;
-                    settings.Save();
-                },
-                () => SelectedPolicy?.IsReadOnly == false && Policies.IndexOf(SelectedPolicy) < Policies.Count - 2
-            );
-
-            MovePolicyTop = new RelayCommand(
-                () =>
-                {
-                    var idx = Policies.IndexOf(SelectedPolicy);
-
-                    Policies.Move(idx, 0);
-
-                    var modelCurrent = settings.Policies[idx];
-                    settings.Policies.RemoveAt(idx);
-                    settings.Policies.Insert(0, modelCurrent);
-                    settings.Save();
-                },
-                () => SelectedPolicy?.IsReadOnly == false && Policies.IndexOf(SelectedPolicy) != 0
-            );
-
-            MovePolicyBottom = new RelayCommand(
-                () =>
-                {
-                    var idx = Policies.IndexOf(SelectedPolicy);
-                    Policies.Move(idx, Policies.Count - 2);
-
-                    var modelCurrent = settings.Policies[idx];
-                    settings.Policies.RemoveAt(idx);
-                    settings.Policies.Add(modelCurrent);
-                    settings.Save();
-                },
-                () => SelectedPolicy?.IsReadOnly == false && Policies.IndexOf(SelectedPolicy) < Policies.Count - 2
-            );
-            #endregion
 
             Exit = new RelayCommand(() => ExitRequested?.Invoke());
 
@@ -141,14 +76,6 @@ namespace GPUControl
             ShowAboutWindow = new RelayCommand(() => new AboutWindow().ShowDialog());
         }
 
-        private void Policies_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-        {
-            MovePolicyUp.NotifyCanExecuteChanged();
-            MovePolicyDown.NotifyCanExecuteChanged();
-            MovePolicyTop.NotifyCanExecuteChanged();
-            MovePolicyBottom.NotifyCanExecuteChanged();
-        }
-
         public SettingsViewModel Settings { get; private set; }
 
         public PolicyServiceViewModel PolicyService { get; }
@@ -166,19 +93,10 @@ namespace GPUControl
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(CanEditPolicy))]
         [NotifyPropertyChangedFor(nameof(CanRemovePolicy))]
-        [NotifyCanExecuteChangedFor(nameof(MovePolicyUp))]
-        [NotifyCanExecuteChangedFor(nameof(MovePolicyDown))]
-        [NotifyCanExecuteChangedFor(nameof(MovePolicyTop))]
-        [NotifyCanExecuteChangedFor(nameof(MovePolicyBottom))]
         private GpuOverclockPolicyViewModel selectedPolicy;
 
         [ObservableProperty]
         private GpuStatusViewModel selectedGpu;
-
-        public IRelayCommand MovePolicyUp { get; }
-        public IRelayCommand MovePolicyDown { get; }
-        public IRelayCommand MovePolicyTop { get; }
-        public IRelayCommand MovePolicyBottom { get; }
 
         public bool CanEditProfile => SelectedProfile?.IsReadOnly == false;
         public bool CanRemoveProfile => SelectedProfile?.IsReadOnly == false;

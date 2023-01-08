@@ -1,4 +1,5 @@
-﻿using GPUControl.Controls;
+﻿using GongSolutions.Wpf.DragDrop;
+using GPUControl.Controls;
 using GPUControl.Lib.GPU;
 using GPUControl.Model;
 using GPUControl.ViewModels;
@@ -20,10 +21,17 @@ using System.Windows.Shapes;
 
 namespace GPUControl.MainPanes
 {
+    // https://github.com/punker76/gong-wpf-dragdrop/blob/develop/src/Showcase/Models/SerializableDragHandler.cs
+    [Serializable]
+    class SerializableWrapper
+    {
+        public IEnumerable<object> Items { get; set; }
+    }
+
     /// <summary>
     /// Interaction logic for PolicyEditorMainPane.xaml
     /// </summary>
-    public partial class PoliciesPane : UserControl
+    public partial class PoliciesPane : UserControl, IDropTarget, IDragSource
     {
         private List<IGpuWrapper> _gpus;
         private Settings _settings;
@@ -119,5 +127,49 @@ namespace GPUControl.MainPanes
 
             editorWindow.NewNameSelected -= IsPolicyNameInUse;
         }
+
+        void IDropTarget.DragOver(IDropInfo dropInfo)
+        {
+            var readOnlyPolicy = ViewModel.Policies.Single(p => p.IsReadOnly);
+            if (dropInfo.InsertIndex <= ViewModel.Policies.IndexOf(readOnlyPolicy))
+            {
+                dropInfo.Effects = DragDropEffects.Move;
+            }
+        }
+
+        void IDropTarget.Drop(IDropInfo dropInfo)
+        {
+            var srcIndex = dropInfo.DragInfo.SourceIndex;
+            var dstIndex = dropInfo.InsertIndex;
+
+            if (srcIndex != dstIndex)
+            {
+                ViewModel.Policies.Move(dropInfo.DragInfo.SourceIndex, dropInfo.InsertIndex);
+
+                var srcValue = _settings.Policies[srcIndex];
+                _settings.Policies.Insert(dstIndex, srcValue);
+
+                if (dstIndex < srcIndex) srcIndex++;
+                _settings.Policies.RemoveAt(srcIndex);
+
+                _settings.Save();
+                _reloadViewModel();
+            }
+        }
+
+        public void StartDrag(IDragInfo dragInfo)
+        {
+            dragInfo.Effects = DragDropEffects.Move;
+            dragInfo.Data = new SerializableWrapper() { Items = dragInfo.SourceItems.OfType<object>().ToList() };
+            dragInfo.DataFormat = DataFormats.GetDataFormat(DataFormats.Serializable);
+        }
+
+        public bool CanStartDrag(IDragInfo dragInfo) => (dragInfo.SourceItem as GpuOverclockPolicyViewModel)!.IsReadOnly == false;
+
+        public void Dropped(IDropInfo dropInfo) { }
+        public void DragDropOperationFinished(DragDropEffects operationResult, IDragInfo dragInfo) { }
+        public void DragCancelled() { }
+
+        public bool TryCatchOccurredException(Exception exception) { return false; }
     }
 }
