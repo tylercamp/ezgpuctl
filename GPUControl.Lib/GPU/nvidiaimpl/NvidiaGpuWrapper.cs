@@ -97,8 +97,9 @@ namespace GPUControl.Lib.GPU.nvidiaimpl
                 {
                     var (cooler, speed) = pair;
 
-                    var mode = speed.HasValue ? NvAPIWrapper.Native.GPU.FanCoolersControlMode.Manual : NvAPIWrapper.Native.GPU.FanCoolersControlMode.Auto;
-                    return new PrivateFanCoolersControlV1.FanCoolersControlEntry((uint)cooler.Id, mode);
+                    return speed.HasValue
+                        ? new PrivateFanCoolersControlV1.FanCoolersControlEntry((uint)cooler.Id, NvAPIWrapper.Native.GPU.FanCoolersControlMode.Manual, (uint)speed.Value)
+                        : new PrivateFanCoolersControlV1.FanCoolersControlEntry((uint)cooler.Id, NvAPIWrapper.Native.GPU.FanCoolersControlMode.Auto);
                 }).ToArray()
             );
             GPUApi.SetClientFanCoolersControl(gpu.Handle, newCoolersControl);
@@ -116,7 +117,7 @@ namespace GPUControl.Lib.GPU.nvidiaimpl
                 }
                 // we're not always able to set fan speeds, but there's nothing we can check to figure that out. just swallow any exceptions
                 catch (Exception e) { }
-        }
+            }
 
             #endregion
         }

@@ -14,6 +14,8 @@ namespace GPUControl.ViewModels
         {
             programName = rule.ProgramName;
             negated = rule.Negated;
+            isRegex = rule.IsRegex;
+            caseInsensitive = rule.CaseInsensitive;
         }
 
         [ObservableProperty]
@@ -22,6 +24,24 @@ namespace GPUControl.ViewModels
         [ObservableProperty]
         private bool negated;
 
-        public ProgramPolicyRule AsModelObject => new ProgramPolicyRule() { ProgramName = programName, Negated = negated };
+        [ObservableProperty]
+        private bool isRegex;
+
+        [ObservableProperty]
+        private bool caseInsensitive;
+
+        public ProgramPolicyRule AsAdvancedModelObject => new ProgramPolicyRule()
+        {
+            ProgramName = programName,
+            Negated = negated,
+            IsRegex = isRegex,
+            CaseInsensitive = caseInsensitive
+        };
+
+        public ProgramPolicyRule AsBasicModelObject => new ProgramPolicyRule()
+        {
+            ProgramName = programName,
+            Negated = negated
+        };
     }
 }

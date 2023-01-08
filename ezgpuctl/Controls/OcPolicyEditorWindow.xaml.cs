@@ -211,6 +211,13 @@ namespace GPUControl.Controls
                 return;
             }
 
+            var validationErrors = ViewModel.Policy.GetValidationErrors();
+            if (validationErrors.Count > 0)
+            {
+                Xceed.Wpf.Toolkit.MessageBox.Show($"Errors were found while validating program rules:\n\n" + string.Join(", ", validationErrors));
+                return;
+            }
+
             DialogResult = true;
             this.Close();
         }

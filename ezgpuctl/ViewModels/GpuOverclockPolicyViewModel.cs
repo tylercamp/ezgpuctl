@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -50,6 +51,8 @@ namespace GPUControl.ViewModels
             );
 
             rules = new ObservableCollection<ProgramPolicyRuleViewModel>(policy.Rules.Select(r => new ProgramPolicyRuleViewModel(r)));
+
+            advancedMode = policy.Rules.Any(r => r.CaseInsensitive || r.IsRegex);
         }
 
 
@@ -93,10 +96,37 @@ namespace GPUControl.ViewModels
         [ObservableProperty]
         private ObservableCollection<ProgramPolicyRuleViewModel> rules;
 
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsRegexColumnSize))]
+        [NotifyPropertyChangedFor(nameof(IsCaseInsensitiveColumnSize))]
+        private bool advancedMode;
+
+        public int IsRegexColumnSize => advancedMode ? 50 : 0;
+        public int IsCaseInsensitiveColumnSize => advancedMode ? 50 : 0;
+
+        public List<string> GetValidationErrors()
+        {
+            List<string> result = new List<string>();
+            for (int i = 0; i < rules.Count; i++)
+            {
+                var rule = rules[i];
+                if (rule.ProgramName.Trim().Length == 0)
+                {
+                    result.Add($"Rule #{i+1} is empty. Enter a value or remove it.");
+                }
+                else if (rule.IsRegex && advancedMode)
+                {
+                    try { Regex.Match("", rule.ProgramName); }
+                    catch { result.Add($"The regex for rule #{i+1} is invalid: {rule.ProgramName}"); }
+                }
+            }
+            return result;
+        }
+
         public GpuOverclockPolicy AsModelObject => new GpuOverclockPolicy(name)
         {
             OrderedProfileNames = Profiles.Select(pvm => pvm.Name).ToList(),
-            Rules = Rules.Where(r => r.ProgramName.Trim().Length > 0).Select(rvm => rvm.AsModelObject).ToList()
+            Rules = Rules.Where(r => r.ProgramName.Trim().Length > 0).Select(rvm => advancedMode ? rvm.AsAdvancedModelObject : rvm.AsBasicModelObject).ToList()
         };
     }
 }

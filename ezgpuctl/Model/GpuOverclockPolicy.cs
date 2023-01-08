@@ -17,7 +17,5 @@ namespace GPUControl.Model
         public string Name { get; set; }
         public List<ProgramPolicyRule> Rules { get; set; } = new List<ProgramPolicyRule>();
         public List<string> OrderedProfileNames { get; set; } = new List<string>();
-
-        public GpuOverclockPolicy Clone() => new GpuOverclockPolicy(Name) { Rules = Rules.Select(r => r.Clone()).ToList(), OrderedProfileNames = new List<string>(OrderedProfileNames) };
     }
 }

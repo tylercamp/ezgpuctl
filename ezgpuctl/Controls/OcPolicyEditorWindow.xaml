@@ -87,20 +87,27 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
-                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="5,5,5,5">
-                        <StackPanel.Resources>
-                            <Style TargetType="{x:Type Button}">
-                                <Setter Property="Margin" Value="5,0,5,0" />
-                            </Style>
-                        </StackPanel.Resources>
+                    <Grid Grid.Row="0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="5,5,5,5">
+                            <StackPanel.Resources>
+                                <Style TargetType="{x:Type Button}">
+                                    <Setter Property="Margin" Value="5,0,5,0" />
+                                </Style>
+                            </StackPanel.Resources>
 
-                        <Button Content="Add" HorizontalAlignment="Left" VerticalAlignment="Top" Width="60" Click="AddProgramButton_Click"/>
-                        <Button Content="Remove" Command="{Binding RemoveRule}"  HorizontalAlignment="Left" VerticalAlignment="Top" Width="60" />
-                    </StackPanel>
+                            <Button Content="Add" HorizontalAlignment="Left" VerticalAlignment="Top" Width="60" Click="AddProgramButton_Click"/>
+                            <Button Content="Remove" Command="{Binding RemoveRule}"  HorizontalAlignment="Left" VerticalAlignment="Top" Width="60" />
+                        </StackPanel>
+                        <CheckBox IsChecked="{Binding Policy.AdvancedMode, Mode=TwoWay}" Grid.Column="1" Content="Advanced" Margin="5,5,5,5" ToolTip="Enables advanced options for program rules. If disabled, any existing advanced settings will be removed when saved." />
+                    </Grid>
 
                     <ListView Grid.Row="1" ItemsSource="{Binding Policy.Rules}" SelectedItem="{Binding SelectedRule, Mode=TwoWay}">
                         <ListView.View>
-                            <GridView>
+                            <GridView AllowsColumnReorder="False">
                                 <GridView.ColumnHeaderContainerStyle>
                                     <Style TargetType="{x:Type GridViewColumnHeader}">
                                         <Setter Property="IsEnabled" Value="False" />
@@ -109,14 +116,28 @@
                                 <GridViewColumn Header="Negate" Width="50">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
-                                            <CheckBox IsChecked="{Binding Negated, Mode=TwoWay}" HorizontalAlignment="Right" />
+                                            <CheckBox IsChecked="{Binding Negated, Mode=TwoWay}" HorizontalAlignment="Right" ToolTip="When unchecked, will match when the named program is running. Otherwise, matches when NOT running." />
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="Case Ins." Width="{Binding DataContext.Policy.IsCaseInsensitiveColumnSize, RelativeSource={RelativeSource AncestorType=controls:OcPolicyEditorWindow}}">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <CheckBox IsChecked="{Binding CaseInsensitive, Mode=TwoWay}" HorizontalAlignment="Right" ToolTip="Whether this rule should be case-insensitive." />
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="Regex" Width="{Binding DataContext.Policy.IsRegexColumnSize, RelativeSource={RelativeSource AncestorType=controls:OcPolicyEditorWindow}}">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <CheckBox IsChecked="{Binding IsRegex, Mode=TwoWay}" HorizontalAlignment="Right" />
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
                                 <GridViewColumn Header="Process Name" Width="200">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
-                                            <ComboBox IsEditable="True" Width="188" Text="{Binding ProgramName, Mode=TwoWay}" ItemsSource="{Binding DataContext.AvailableProgramNames, RelativeSource={RelativeSource AncestorType=controls:OcPolicyEditorWindow}}" />
+                                            <ComboBox IsEditable="True" IsTextSearchEnabled="False" Width="188" Text="{Binding ProgramName, Mode=TwoWay}" ItemsSource="{Binding DataContext.AvailableProgramNames, RelativeSource={RelativeSource AncestorType=controls:OcPolicyEditorWindow}}" />
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
