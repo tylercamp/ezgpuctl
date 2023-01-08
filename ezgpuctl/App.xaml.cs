@@ -39,6 +39,6 @@ namespace GPUControl
             }
         }
 
-        public static readonly string Version = "v1.0d-BETA";
+        public static readonly string Version = "v1.0e-BETA";
     }
 }
