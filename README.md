@@ -14,7 +14,7 @@ Eg:
 
 Download the most recent `gpucontrol.zip` file from this repo's Releases section. Extract the _entire_ ZIP file.
 
-Run the app and accept its terms. The main window will allow you to add profiles which specify OC settings. Profiles can optionally define 1 more more setting(s) on a per-GPU basis. After adding at
+Run the app and accept its terms. The main window will allow you to add profiles which specify OC settings. Profiles can optionally define 1 or more setting(s) on a per-GPU basis. After adding at
 least 1 profile, you can add a policy which will be applied when the configured programs are running. If multiple policies are active, the OCs will be merged in reverse order, eg the top-most policy
 will have priority. The profiles within a policy are merged with the same logic.
 
