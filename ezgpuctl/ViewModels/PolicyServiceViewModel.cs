@@ -29,6 +29,8 @@ namespace GPUControl.ViewModels
 
             OverclockManager.ManagerStateChanged += OverclockManager_ManagerStateChanged;
 
+            isRunning = OverclockManager.IsRunning;
+
             StartOcService = new RelayCommand(
                 () =>
                 {
