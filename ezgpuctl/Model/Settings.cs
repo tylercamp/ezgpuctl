@@ -67,7 +67,7 @@ namespace GPUControl.Model
         {
             if (Path == null) throw new InvalidOperationException();
 
-            File.WriteAllText(Path, JsonConvert.SerializeObject(this));
+            File.WriteAllText(Path, JsonConvert.SerializeObject(this, Formatting.Indented));
         }
 
         public static Settings LoadFrom(string filename)
