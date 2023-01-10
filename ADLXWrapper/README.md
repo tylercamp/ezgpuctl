@@ -14,3 +14,4 @@ but can be downloaded here: https://download.amd.com/dir/bin/amdadlx64.dll/
 I used the [Jan 9 2023](https://download.amd.com/dir/bin/amdadlx64.dll/63AAB932421000/) build.
 
 The DLL needs to be [downloaded manually](https://github.com/GPUOpen-LibrariesAndSDKs/ADLX/issues/4) (at time of writing).
+

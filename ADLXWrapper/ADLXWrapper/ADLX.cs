@@ -99,6 +99,31 @@ public class ADLX {
     return ret;
   }
 
+  public static SWIGTYPE_p_bool new_boolP() {
+    global::System.IntPtr cPtr = ADLXPINVOKE.new_boolP();
+    SWIGTYPE_p_bool ret = (cPtr == global::System.IntPtr.Zero) ? null : new SWIGTYPE_p_bool(cPtr, false);
+    return ret;
+  }
+
+  public static SWIGTYPE_p_bool copy_boolP(bool value) {
+    global::System.IntPtr cPtr = ADLXPINVOKE.copy_boolP(value);
+    SWIGTYPE_p_bool ret = (cPtr == global::System.IntPtr.Zero) ? null : new SWIGTYPE_p_bool(cPtr, false);
+    return ret;
+  }
+
+  public static void delete_boolP(SWIGTYPE_p_bool obj) {
+    ADLXPINVOKE.delete_boolP(SWIGTYPE_p_bool.getCPtr(obj));
+  }
+
+  public static void boolP_assign(SWIGTYPE_p_bool obj, bool value) {
+    ADLXPINVOKE.boolP_assign(SWIGTYPE_p_bool.getCPtr(obj), value);
+  }
+
+  public static bool boolP_value(SWIGTYPE_p_bool obj) {
+    bool ret = ADLXPINVOKE.boolP_value(SWIGTYPE_p_bool.getCPtr(obj));
+    return ret;
+  }
+
   public static SWIGTYPE_p_unsigned_int new_uintP() {
     global::System.IntPtr cPtr = ADLXPINVOKE.new_uintP();
     SWIGTYPE_p_unsigned_int ret = (cPtr == global::System.IntPtr.Zero) ? null : new SWIGTYPE_p_unsigned_int(cPtr, false);
@@ -458,6 +483,32 @@ public class ADLX {
 
   public static string charP_Ptr_value(SWIGTYPE_p_p_char obj) {
     string ret = ADLXPINVOKE.charP_Ptr_value(SWIGTYPE_p_p_char.getCPtr(obj));
+    return ret;
+  }
+
+  public static SWIGTYPE_p_p_adlx__IADLXInterface new_interfaceP_Ptr() {
+    global::System.IntPtr cPtr = ADLXPINVOKE.new_interfaceP_Ptr();
+    SWIGTYPE_p_p_adlx__IADLXInterface ret = (cPtr == global::System.IntPtr.Zero) ? null : new SWIGTYPE_p_p_adlx__IADLXInterface(cPtr, false);
+    return ret;
+  }
+
+  public static SWIGTYPE_p_p_adlx__IADLXInterface copy_interfaceP_Ptr(IADLXInterface value) {
+    global::System.IntPtr cPtr = ADLXPINVOKE.copy_interfaceP_Ptr(IADLXInterface.getCPtr(value));
+    SWIGTYPE_p_p_adlx__IADLXInterface ret = (cPtr == global::System.IntPtr.Zero) ? null : new SWIGTYPE_p_p_adlx__IADLXInterface(cPtr, false);
+    return ret;
+  }
+
+  public static void delete_interfaceP_Ptr(SWIGTYPE_p_p_adlx__IADLXInterface obj) {
+    ADLXPINVOKE.delete_interfaceP_Ptr(SWIGTYPE_p_p_adlx__IADLXInterface.getCPtr(obj));
+  }
+
+  public static void interfaceP_Ptr_assign(SWIGTYPE_p_p_adlx__IADLXInterface obj, IADLXInterface value) {
+    ADLXPINVOKE.interfaceP_Ptr_assign(SWIGTYPE_p_p_adlx__IADLXInterface.getCPtr(obj), IADLXInterface.getCPtr(value));
+  }
+
+  public static IADLXInterface interfaceP_Ptr_value(SWIGTYPE_p_p_adlx__IADLXInterface obj) {
+    global::System.IntPtr cPtr = ADLXPINVOKE.interfaceP_Ptr_value(SWIGTYPE_p_p_adlx__IADLXInterface.getCPtr(obj));
+    IADLXInterface ret = (cPtr == global::System.IntPtr.Zero) ? null : new IADLXInterface(cPtr, false);
     return ret;
   }
 
